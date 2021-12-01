@@ -30,6 +30,8 @@ Se déplacer dans les BRANCH :
 	
 MERGE :
 	git fetch
+	git checkout [branche qu'on veut mettre dans l'autre]
+	git pull (pour être sûr d'être à jour en local)
 	git merge [nom de la branche a merge]
 	Il faudra peut-être gérer des conflits
 	
