@@ -9,11 +9,12 @@ Avant tout, pour avoir le projet en local :
 Savoir où on en est :
 	git status
 
-PUSH (envoyer sur le serveur distant) :
+PUSH (envoyer la branche sur le serveur distant) :
 	(se déplacer dans le dossier du projet)
 	git add [les fichiers modifiés ou . pour tous]
 	git commit -m "Je dis ici les modifs effectuée"
-	git push -u origin [nom de la branche où on veut push]
+	git push
+	git push -u origin [branche où on veut push] (si la branche existe pas en distant)
 	
 PULL (récupérer tous les fichiers du serveur distant) :
 	git fetch
@@ -28,7 +29,7 @@ Se déplacer dans les BRANCH :
 	git checkout [nom de la branche où on veut aller]
 	ATTENTION: faire un commit avant sinon toutes les modifs en cours sur la branche se retrouve dans l'autre (pas besoin de commit si on veut bien déplacer les modifs)
 	
-MERGE :
+MERGE (en local) :
 	git fetch
 	git checkout [branche qu'on veut mettre dans l'autre]
 	git pull (pour être sûr d'être à jour en local)
