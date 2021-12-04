@@ -1,5 +1,5 @@
-# Ignore bin folder
+# Ignore le dossier des binaires
 bin
 
-# Ignore objects folder
+# Ignore le dossier des objets
 objects
