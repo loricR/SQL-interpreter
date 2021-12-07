@@ -13,7 +13,7 @@
 int main(int argc, char *argv[]) {
 
     // Here: check parameters with getopt
-    // Modification pour branch check_parameters
+    // Test modification pour branch check_parameters
 
     char buffer[SQL_COMMAND_MAX_SIZE];
     do {
