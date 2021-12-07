@@ -15,6 +15,7 @@ int main(int argc, char *argv[]) {
     // Here: check parameters with getopt
     // Test modification pour branch check_parameters
 
+
     char buffer[SQL_COMMAND_MAX_SIZE];
     do {
         printf("> ");
