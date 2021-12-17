@@ -9,6 +9,17 @@
 #include <stdbool.h>
 
 char *get_sep_space(char *sql) {
+    if(sql == NULL){
+        printf("Erreur1 rencontree dans fonction get_sep_space\n");
+    }
+    else if(*sql != ' '){
+        printf("Erreur2 rencontree dans fonction get_sep_space\n");
+    }
+    else{
+        while(*sql == ' '){
+            sql++;
+        }
+    }
     return sql;
 }
 
