@@ -24,6 +24,13 @@ char *get_sep_space(char *sql) {
 }
 
 char *get_sep_space_and_char(char *sql, char c) {
+    sql = get_sep_space(sql);
+    if(*sql == c){
+        sql = get_sep_space(sql+1);
+    }
+    else{
+        printf("Erreur rencontree dans fonction get_sep_space_and_char\n");
+    }
     return sql;
 }
 
