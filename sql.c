@@ -37,6 +37,19 @@ char *get_sep_space_and_char(char *sql, char c) {
 }
 
 char *get_keyword(char *sql, char *keyword) {
+    char *backup=sql;
+    int different=0;
+    for(int i=1; i<=strlen(keyword); i++){
+        if(toupper(*sql) != toupper(*keyword)){
+            different=1;
+        }
+        sql++;
+        keyword++;
+    }
+
+    if(different){
+        sql=backup;
+    }
     return sql;
 }
 
