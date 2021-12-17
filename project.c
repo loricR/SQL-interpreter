@@ -13,7 +13,23 @@
 int main(int argc, char *argv[]) {
 
     // Here: check parameters with getopt
-    // Test modification pour branch check_parameters
+    int opt = 0;
+    char param;
+    char argument[1000];
+    while ((opt = getopt(argc, argv, "d:l:")) != -1){
+    	switch (opt) {
+    		case 'd' :
+    			printf("Vous avez passe le parametre d\n");
+                param = 'd';
+    			argument = optarg;
+    			break;
+    		case 'l' :
+    			printf("Vous avez passe le parametre l\n");
+                param = 'l';
+    			argument = optarg;
+    			break;
+    	}
+    }
 
 
     char buffer[SQL_COMMAND_MAX_SIZE];
