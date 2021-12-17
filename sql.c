@@ -50,7 +50,6 @@ char *get_keyword(char *sql, char *keyword) {
     if(different){
         sql=backup;
     }
-
     return sql;
 }
 
