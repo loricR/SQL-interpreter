@@ -58,7 +58,14 @@ char *get_field_name(char *sql, char *field_name) {
 }
 
 bool has_reached_sql_end(char *sql) {
-    return false;
+    sql = get_sep_space(sql);
+    int response=false;
+
+    if(*sql=='\0'){
+        response=true;
+    }
+
+    return response;
 }
 
 char *parse_fields_or_values_list(char *sql, table_record_t *result) {
