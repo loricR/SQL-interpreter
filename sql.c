@@ -37,6 +37,20 @@ char *get_sep_space_and_char(char *sql, char c) {
 }
 
 char *get_keyword(char *sql, char *keyword) {
+    char *backup=sql;
+    int different=0;
+    for(int i=1; i<=strlen(keyword); i++){
+        if(toupper(*sql) != toupper(*keyword)){
+            different=1;
+        }
+        sql++;
+        keyword++;
+    }
+
+    if(different){
+        sql=backup;
+    }
+
     return sql;
 }
 
@@ -45,7 +59,14 @@ char *get_field_name(char *sql, char *field_name) {
 }
 
 bool has_reached_sql_end(char *sql) {
-    return false;
+    sql = get_sep_space(sql);
+    int response=false;
+
+    if(*sql=='\0'){
+        response=true;
+    }
+
+    return response;
 }
 
 char *parse_fields_or_values_list(char *sql, table_record_t *result) {
