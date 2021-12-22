@@ -10,12 +10,10 @@
 
 char *get_sep_space(char *sql) {
     if(sql == NULL){
-        printf("Erreur1 rencontree dans fonction get_sep_space\n");
-    }
-    else if(*sql != ' '){
-        printf("Erreur2 rencontree dans fonction get_sep_space\n");
+        printf("Erreur sql=NULL dans get_sep_space\n");
     }
     else{
+        //Tant que le caract est un espaces on passe au suivant
         while(*sql == ' '){
             sql++;
         }
@@ -25,11 +23,16 @@ char *get_sep_space(char *sql) {
 
 char *get_sep_space_and_char(char *sql, char c) {
     char *backup = sql;
-    sql = get_sep_space(sql);
-    if(*sql == c){
+    sql = get_sep_space(sql); //On passe tous les espaces devant le caract
+    if(sql == NULL){
+        printf("Erreur sql=NULL dans get_sep_space_and_char\n");
+    }
+    else if(*sql == c){
+        //Si le caract est celui demandé, on passe tous les espaces après
         sql = get_sep_space(sql+1);
     }
     else{
+        //Si le caract n'est pas celui demandé, on rétabli sql comme initialement
         printf("Erreur rencontree dans fonction get_sep_space_and_char\n");
         sql = backup;
     }
@@ -39,14 +42,15 @@ char *get_sep_space_and_char(char *sql, char c) {
 char *get_keyword(char *sql, char *keyword) {
     char *backup=sql;
     int different=0;
-    for(int i=1; i<=strlen(keyword); i++){
-        if(toupper(*sql) != toupper(*keyword)){
-            different=1;
+    for(int i=1; i<=strlen(keyword); i++){ //Pour chaque caractere
+        if(toupper(*sql) != toupper(*keyword)){ //Si ce caract est different d'un mot à l'autre
+            different=1; //On défini la variable different a vrai
         }
         sql++;
         keyword++;
     }
 
+    //Si les deux mots sont differents, on rétablit sql comme initialement
     if(different){
         sql=backup;
     }
