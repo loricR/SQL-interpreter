@@ -83,7 +83,7 @@ bool has_reached_sql_end(char *sql) {
     sql = get_sep_space(sql);
     int response=false;
 
-    if(*sql=='\0'){
+    if(*sql==';'){
         response=true;
     }
 
