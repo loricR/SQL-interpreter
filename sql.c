@@ -54,6 +54,24 @@ char *get_keyword(char *sql, char *keyword) {
 }
 
 char *get_field_name(char *sql, char *field_name) {
+    if(*sql == ' '){
+        printf("ERREUR dans fonction get_field_name\n");
+    }
+    else if(*sql == '\''){
+        sql++;
+        while(*sql != '\''){
+            *field_name = *sql;
+            sql++;
+            field_name++;
+        }
+    }
+    else{
+        while(*sql != ' '){
+            *field_name = *sql;
+            sql++;
+            field_name++;
+        }
+    }
     return sql;
 }
 
