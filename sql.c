@@ -39,6 +39,9 @@ char *get_sep_space_and_char(char *sql, char c) {
 }
 
 char *get_keyword(char *sql, char *keyword) {
+    if (sql == NULL) {
+        return NULL;
+    }
     char *backup = sql;
     int different = 0;
     int longueur = strlen(keyword);
@@ -54,7 +57,7 @@ char *get_keyword(char *sql, char *keyword) {
 
     //Si les deux mots sont differents ou que keyword est plus grand que sql, on rétablit sql comme initialement
     if (different) {
-        sql = backup;
+        sql = NULL;
     }
 
     return sql;
