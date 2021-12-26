@@ -40,20 +40,24 @@ char *get_sep_space_and_char(char *sql, char c) {
 }
 
 char *get_keyword(char *sql, char *keyword) {
-    char *backup=sql;
-    int different=0;
-    for(int i=1; i<=strlen(keyword); i++){ //Pour chaque caractere
-        if(toupper(*sql) != toupper(*keyword)){ //Si ce caract est different d'un mot à l'autre
-            different=1; //On défini la variable different a vrai
+    char *backup = sql;
+    int different = 0;
+    int longueur = strlen(keyword);
+    if (longueur <= strlen(sql)) { //Keyword ne doit pas être plus grand que sql
+        for (int i=0; i<longueur; i++) { //Pour chaque caractere
+            if (toupper(*(sql++)) != toupper(*(keyword++))) { //Si ce caract est different d'un mot à l'autre
+                different = 1; //On défini la variable different a vrai
+            }
         }
-        sql++;
-        keyword++;
+    } else {
+        different = 1;
     }
 
-    //Si les deux mots sont differents, on rétablit sql comme initialement
-    if(different){
-        sql=backup;
+    //Si les deux mots sont differents ou que keyword est plus grand que sql, on rétablit sql comme initialement
+    if (different) {
+        sql = backup;
     }
+
     return sql;
 }
 
