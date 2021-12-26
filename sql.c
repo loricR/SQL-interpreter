@@ -104,27 +104,30 @@ bool has_reached_sql_end(char *sql) {
     return response;
 }
 
+
 char *parse_fields_or_values_list(char *sql, table_record_t *result) {
-    sql = get_sep_space(sql);
-    char *temp;
-
-    if(*sql == '('){
-        sql++;
+    if (sql == NULL) {
+        return NULL;
     }
+    sql = get_sep_space(sql);
 
-    do{
-        if(*sql == ','){
-            sql++; //On passe à l'espace suivant la virgule
-            sql++; //On passe au caract suivant l'espace
-        }
-
-        while(*sql != ',' && *sql != ' '){
-            //Stocker chaque caractère quelque part dans la structure table_record_t mais jsp où
-        }
+    char buffer[TEXT_LENGTH];
+    char *sql_next = sql;
+    do {
+        sql = sql_next;
+        sql = get_field_name(sql, buffer);
+        strcpy(result->fields[result->fields_count].field_value.text_value, buffer); //On rempli text_value avec le champ récupéré par get_field_name
         result->fields_count++; //On incrémente le compteur de champs
-    }while(*sql == ',');
+
+        sql_next = get_sep_space_and_char(sql, ',');
+    } while ((sql != sql_next) && (result->fields_count < MAX_FIELDS_COUNT));
+
+    if ((sql != sql_next) && (result->fields_count >= MAX_FIELDS_COUNT)) {
+        sql = NULL;
+    }
     return sql;
 }
+
 
 char *parse_create_fields_list(char *sql, table_definition_t *result) {
     return sql;
