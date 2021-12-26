@@ -61,24 +61,28 @@ char *get_keyword(char *sql, char *keyword) {
 }
 
 char *get_field_name(char *sql, char *field_name) {
-    if(*sql == ' '){
-        printf("ERREUR dans fonction get_field_name\n");
+    if (sql == NULL) {
+        return NULL;
     }
-    else if(*sql == '\''){
+    sql = get_sep_space(sql);
+
+    int i = 0;
+    if (*sql == '\'') {
         sql++;
-        while(*sql != '\''){
-            *field_name = *sql;
-            sql++;
-            field_name++;
+        while ((i++ < (TEXT_LENGTH-1)) && (*sql != '\'') && (*sql != '\0')) {
+            *(field_name++) = *(sql++);
+        }
+        if ((*sql == '\0') || (i >= TEXT_LENGTH)) { //Erreur si on trouve pas la cote de fermeture
+            return NULL;
+        }
+        sql++;
+    } else {
+        while ((i++ < (TEXT_LENGTH-1)) && (*sql != ' ') && (*sql != ',') && (*sql != '\0')) {
+            *(field_name++) = *(sql++);
         }
     }
-    else{
-        while(*sql != ' '){
-            *field_name = *sql;
-            sql++;
-            field_name++;
-        }
-    }
+    *(field_name++) = '\0';
+
     return sql;
 }
 
