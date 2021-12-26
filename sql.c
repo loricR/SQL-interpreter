@@ -91,6 +91,24 @@ bool has_reached_sql_end(char *sql) {
 }
 
 char *parse_fields_or_values_list(char *sql, table_record_t *result) {
+    sql = get_sep_space(sql);
+    char *temp;
+
+    if(*sql == '('){
+        sql++;
+    }
+
+    do{
+        if(*sql == ','){
+            sql++; //On passe à l'espace suivant la virgule
+            sql++; //On passe au caract suivant l'espace
+        }
+
+        while(*sql != ',' && *sql != ' '){
+            //Stocker chaque caractère quelque part dans la structure table_record_t mais jsp où
+        }
+        result->fields_count++; //On incrémente le compteur de champs
+    }while(*sql == ',');
     return sql;
 }
 
