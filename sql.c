@@ -90,11 +90,15 @@ char *get_field_name(char *sql, char *field_name) {
 }
 
 bool has_reached_sql_end(char *sql) {
-    sql = get_sep_space(sql);
-    int response=false;
+    int response = false;
 
-    if(*sql==';'){
-        response=true;
+    if (sql == NULL) {
+        response = true;
+    }
+    sql = get_sep_space(sql);
+
+    if (*sql == ';') {
+        response = true;
     }
 
     return response;
