@@ -39,10 +39,32 @@ int main(int argc, char *argv[]) {
     test = getchar();
     if (test == 'o') {
         printf("Mode test : \n");
-        strcpy(buffer, "SELECT champ1, champ2 FROM table"); //Simulation d'une requete sql entrée par l'utilisateur
-        printf("%s\n", get_sep_space(buffer));
-        //printf("%s\n", get_sep_space_and_char(buffer, ','));
-        printf("%s\n", get_keyword(buffer, "SELECT"));
+        //strcpy(buffer, "SELECT  , champ1 , champ2, 4, 5, 6 , 7, 8, 9, 10, 11, 12, 13 ,14, 15 ,16 FROM table;"); //Simulation d'une requete sql entrée par l'utilisateur
+        strcpy(buffer, "  (int1 int, text2 text, float3.1 float, chien3 chien, float4 float ) "); //Simulation d'une requete sql entrée par l'utilisateur
+        //printf("%s\n", get_sep_space(buffer));
+        //printf("%s\n", get_sep_space_and_char(buffer, 'S'));
+        //printf("%s\n", get_keyword(buffer, "SELECT"));
+        //char p_champ[TEXT_LENGTH];
+        //printf("%s : ", get_field_name(buffer, p_champ));
+        
+        //printf("%s\n", p_champ);
+        //printf("%d", has_reached_sql_end(buffer));
+
+        /*table_record_t liste_champs;
+        liste_champs.fields_count = 0;
+        printf("%s\n", parse_fields_or_values_list(buffer, &liste_champs));
+        printf("%d\n", liste_champs.fields_count);
+        for (int i=0; i<liste_champs.fields_count; i++) {
+            printf("champ : %s\n", liste_champs.fields[i].field_value.text_value);
+        }*/
+
+        table_definition_t liste_create;
+        liste_create.fields_count = 0;
+        printf("%s\n", parse_create_fields_list(buffer, &liste_create));
+        for (int i=0; i<liste_create.fields_count; i++) {
+            printf("nom : %s - ", liste_create.definitions[i].column_name);
+            printf("type : %d\n", liste_create.definitions[i].column_type);
+        }
     } else {
         printf("Mode normal : \n");
         do {
