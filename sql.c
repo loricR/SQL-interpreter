@@ -254,33 +254,61 @@ char *parse_where_clause(char *sql, filter_t *filter) {
 }
 
 query_result_t *parse(char *sql, query_result_t *result) {
-    return NULL;
+    if (sql == NULL) {
+        return NULL;
+    }
+
+    sql = get_sep_space(sql);
+    //On appelle les fonctions qui correspondent au keyword de la requête
+    if (get_keyword(sql, "SELECT") != NULL) {
+        result = parse_select(sql, result);
+    } else if (get_keyword(sql, "CREATE") != NULL) {
+        result = parse_create(sql, result);
+    } else if (get_keyword(sql, "INSERT") != NULL) {
+        result = parse_insert(sql, result);
+    } else if (get_keyword(sql, "UPDATE") != NULL) {
+        result = parse_update(sql, result);
+    } else if (get_keyword(sql, "DELETE") != NULL) {
+        result = parse_delete(sql, result);
+    } else if (get_keyword(sql, "DROP DATABASE") != NULL) {
+        result = parse_drop_db(sql, result);
+    } else if (get_keyword(sql, "DROP TABLE") != NULL) {
+        result = parse_drop_table(sql, result);
+    }
+    return result;
 }
 
 query_result_t *parse_select(char *sql, query_result_t *result) {
+    printf("parse_select\n");
     return NULL;
 }
 
 query_result_t *parse_create(char *sql, query_result_t *result) {
+    printf("parse_create\n");
     return NULL;
 }
 
 query_result_t *parse_insert(char *sql, query_result_t *result) {
+    printf("parse_insert\n");
     return NULL;
 }
 
 query_result_t *parse_update(char *sql, query_result_t *result) {
+    printf("parse_update\n");
     return NULL;
 }
 
 query_result_t *parse_delete(char *sql, query_result_t *result) {
+    printf("parse_delete\n");
     return NULL;
 }
 
 query_result_t *parse_drop_db(char *sql, query_result_t *result) {
+    printf("parse_drop_db\n");
     return NULL;
 }
 
 query_result_t *parse_drop_table(char *sql, query_result_t *result) {
+    printf("parse_drop_table\n");
     return NULL;
 }
