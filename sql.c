@@ -77,7 +77,7 @@ char *get_field_name(char *sql, char *field_name) {
         }
         sql++;
     } else {
-        while ((i++ < (TEXT_LENGTH-1)) && (*sql != ' ') && (*sql != ',') && (*sql != '\0')) {
+        while ((i++ < (TEXT_LENGTH-1)) && (*sql != ' ') && (*sql != ',') && (*sql != ';') && (*sql != '\0')) {
             *(field_name++) = *(sql++);
         }
     }
@@ -205,7 +205,6 @@ char *parse_set_clause(char *sql, table_record_t *result) {
     char *sql_next = sql;
     do {
         sql = parse_equality(sql, &result->fields[result->fields_count]);
-        printf("%s\n", sql);
         result->fields_count++; //On incrémente le compteur de champs
         sql_next = get_sep_space_and_char(sql, ',');
     } while ((sql_next != NULL) && (result->fields_count < MAX_FIELDS_COUNT)); //Tant qu'il y a encore des égalités, donc des ','
@@ -222,6 +221,34 @@ char *parse_where_clause(char *sql, filter_t *filter) {
         return NULL;
     }
 
+    sql = get_sep_space(sql);
+    char *sql_next = sql;
+    filter->values.fields_count = 0;
+    operator_t operator = OP_ERROR;
+    do {
+        sql = parse_equality(sql, &filter->values.fields[filter->values.fields_count]);
+
+        sql = get_sep_space(sql);
+        sql_next = get_keyword(sql, "OR");
+        if (sql_next != NULL) { //On vérifie si l'opérateur entre les égalités est un OR
+            operator = OP_OR;
+            sql = sql_next;
+        } else {
+            sql_next = get_keyword(sql, "AND"); 
+            if (sql_next != NULL) { //On vérifie si l'opérateur entre les égalités est un AND
+                operator = OP_AND;
+                sql = sql_next;
+            }
+        }
+        
+        if (filter->values.fields_count == 0) {
+            filter->logic_operator = operator; //Si c'est le premier opérateur on le met à jour
+        } else if (filter->logic_operator != operator) {
+            filter->logic_operator = OP_ERROR; //Si c'est pas le même opérateur que le premier, c'est une erreur
+        }
+
+        filter->values.fields_count++; //On incrémente le compteur de champs
+    } while ((sql_next != NULL) && (filter->values.fields_count < MAX_FIELDS_COUNT)); //Tant qu'il y a encore des égalités, donc des OR ou AND
 
     return sql;
 }
