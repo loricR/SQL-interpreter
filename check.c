@@ -143,22 +143,22 @@ bool check_value_types(table_record_t *fields_list, table_definition_t *table_de
  * @return a pointer to the field definition structure if the field name exists, NULL if it doesn't.
  */
 field_definition_t *find_field_definition(char *field_name, table_definition_t *table_definition) {
-    field_definition_t *response=NULL;
-    bool exist_temp=true;
-    for (int i=0; i<table_definition->fields_count; i++){ //On parcours chaque champs de table_definition
-        if (strlen(field_name) == strlen(table_definition->definitions[i].column_name)){ //Si le champs fait la meme longueeur que field_name
-            for (int j=0; j<strlen(field_name); j++){ //On parcours chaque lettre 
-                if (field_name[j]!=table_definition->definitions[i].column_name[j]){ //Si une lettre est diffférente
+    field_definition_t *response = NULL;
+    bool exist_temp = true;
+    for (int i=0; i<table_definition->fields_count; i++) { //On parcours chaque champs de table_definition
+        if (strlen(field_name) == strlen(table_definition->definitions[i].column_name)) { //Si le champs fait la meme longueeur que field_name
+            for (int j=0; j<strlen(field_name); j++) { //On parcours chaque lettre 
+                if (field_name[j]!=table_definition->definitions[i].column_name[j]) { //Si une lettre est diffférente
                     exist_temp=false; //Les mots sont différents
                 }
             }
         }
-        else{ //Si les champs ne font pas la même longueur, ils sont différents
-            exist_temp=false;
+        else { //Si les champs ne font pas la même longueur, ils sont différents
+            exist_temp = false;
         }
     
-        if (exist_temp){ //Si les champs correspondent
-            response=&table_definition->definitions[i]; // On parametre la réponse de la fonction
+        if (exist_temp) { //Si les champs correspondent
+            response = &table_definition->definitions[i]; // On parametre la réponse de la fonction
         }
     }
     return response;
