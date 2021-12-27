@@ -91,13 +91,13 @@ bool has_reached_sql_end(char *sql) {
 
     if (sql == NULL) {
         response = true;
-    }
-    sql = get_sep_space(sql);
+    } else {
+        sql = get_sep_space(sql);
 
-    if (*sql == ';') {
-        response = true;
+        if (*sql == ';') {
+            response = true;
+        }
     }
-
     return response;
 }
 
@@ -218,6 +218,11 @@ char *parse_set_clause(char *sql, table_record_t *result) {
 }
 
 char *parse_where_clause(char *sql, filter_t *filter) {
+    if (sql == NULL) {
+        return NULL;
+    }
+
+
     return sql;
 }
 
