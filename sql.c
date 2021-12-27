@@ -110,6 +110,7 @@ char *parse_fields_or_values_list(char *sql, table_record_t *result) {
 
     char buffer[TEXT_LENGTH];
     char *sql_next = sql;
+    result->fields_count = 0;
     do {
         sql = sql_next;
         sql = get_field_name(sql, buffer);
@@ -117,9 +118,9 @@ char *parse_fields_or_values_list(char *sql, table_record_t *result) {
         result->fields_count++; //On incrémente le compteur de champs
 
         sql_next = get_sep_space_and_char(sql, ',');
-    } while ((sql != sql_next) && (result->fields_count < MAX_FIELDS_COUNT));
+    } while ((sql_next != NULL) && (result->fields_count < MAX_FIELDS_COUNT));
 
-    if ((sql != sql_next) && (result->fields_count >= MAX_FIELDS_COUNT)) {
+    if ((sql_next != NULL) && (result->fields_count >= MAX_FIELDS_COUNT)) {
         sql = NULL;
     }
     return sql;
@@ -127,14 +128,15 @@ char *parse_fields_or_values_list(char *sql, table_record_t *result) {
 
 
 char *parse_create_fields_list(char *sql, table_definition_t *result) {
+    sql = get_sep_space(sql);
+    sql = get_sep_space_and_char(sql, '(');
     if (sql == NULL) {
         return NULL;
     }
-    sql = get_sep_space(sql);
-    sql = get_sep_space_and_char(sql, '(');
 
     char buffer[TEXT_LENGTH];
     char *sql_next = sql;
+    result->fields_count = 0;
     do {
         sql = sql_next;
         sql = get_field_name(sql, buffer);
@@ -161,9 +163,9 @@ char *parse_create_fields_list(char *sql, table_definition_t *result) {
         result->fields_count++; //On incrémente le compteur de champs
 
         sql_next = get_sep_space_and_char(sql, ',');
-    } while ((sql != sql_next) && (result->fields_count < MAX_FIELDS_COUNT));
+    } while ((sql_next != NULL) && (result->fields_count < MAX_FIELDS_COUNT));
 
-    if ((sql != sql_next) && (result->fields_count >= MAX_FIELDS_COUNT)) {
+    if ((sql_next != NULL) && (result->fields_count >= MAX_FIELDS_COUNT)) {
         sql = NULL;
     }
     sql = get_sep_space_and_char(sql, ')');
@@ -182,7 +184,7 @@ char *parse_equality(char *sql, field_record_t *equality) {
     strcpy(equality->column_name, buffer);
 
     char *sql_next = get_sep_space_and_char(sql, '=');
-    if (sql == sql_next) { //Si le pointeur sql n'a pas bougé, le '=' n'a pas été trouvé
+    if (sql_next == NULL) { //Si le pointeur sql n'a pas bougé, le '=' n'a pas été trouvé
         return NULL;
     } else {
         sql = sql_next;
@@ -203,6 +205,7 @@ char *parse_set_clause(char *sql, table_record_t *result) {
     char *sql_next = sql;
     do {
         sql = parse_equality(sql, &result->fields[result->fields_count]);
+        printf("%s\n", sql);
         result->fields_count++; //On incrémente le compteur de champs
         sql_next = get_sep_space_and_char(sql, ',');
     } while ((sql_next != NULL) && (result->fields_count < MAX_FIELDS_COUNT)); //Tant qu'il y a encore des égalités, donc des ','
