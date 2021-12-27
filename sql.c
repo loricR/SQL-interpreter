@@ -381,8 +381,26 @@ query_result_t *parse_update(char *sql, query_result_t *result) {
 }
 
 query_result_t *parse_delete(char *sql, query_result_t *result) {
-    printf("parse_delete\n");
-    return NULL;
+    char *temp;
+    sql = get_keyword(sql, "DELETE");
+    sql = get_sep_space(sql);
+    sql = get_keyword(sql, "FROM");
+    sql = get_sep_space(sql);
+    result->query_type = QUERY_DELETE;
+    sql = get_field_name(sql, result->query_content.delete_query.table_name); //On récupère le nom de la table
+    sql = get_sep_space(sql);
+    temp = get_keyword(sql, "WHERE");
+    if (temp != NULL) { //S'il y a une clause WHERE on la traite, sinon on a fini de parser la requête
+        sql = temp;
+        sql = get_sep_space(sql);
+        sql = parse_where_clause(sql, &result->query_content.delete_query.where_clause); //On récupère la clause WHERE
+    }
+    
+    if ((!has_reached_sql_end(sql)) || (sql == NULL)) {
+            return NULL;
+    }
+
+    return result;
 }
 
 query_result_t *parse_drop_db(char *sql, query_result_t *result) {
