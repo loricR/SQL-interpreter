@@ -328,8 +328,26 @@ query_result_t *parse_create(char *sql, query_result_t *result) {
 }
 
 query_result_t *parse_insert(char *sql, query_result_t *result) {
-    printf("parse_insert\n");
-    return NULL;
+    sql = get_keyword(sql, "INSERT");
+    sql = get_sep_space(sql);
+    sql = get_keyword(sql, "INTO");
+    sql = get_sep_space(sql);
+    result->query_type = QUERY_INSERT;
+    sql = get_field_name(sql, result->query_content.insert_query.table_name); //On récupère le nom de la table
+    sql = get_sep_space_and_char(sql, '('); //On enlève la parenthèse de début
+    sql = parse_fields_or_values_list(sql, &result->query_content.insert_query.fields_names); //On récupère les champs
+    sql = get_sep_space_and_char(sql, ')'); //On enlève la parenthèse de fin
+    sql = get_sep_space(sql);
+    sql = get_keyword(sql, "VALUES");
+    sql = get_sep_space_and_char(sql, '('); //On enlève la parenthèse de début
+    sql = parse_fields_or_values_list(sql, &result->query_content.insert_query.fields_values); //On récupère les valeurs
+    sql = get_sep_space_and_char(sql, ')'); //On enlève la parenthèse de fin
+
+    if ((!has_reached_sql_end(sql)) || (sql == NULL)) {
+            return NULL;
+        }
+
+    return result;
 }
 
 query_result_t *parse_update(char *sql, query_result_t *result) {

@@ -43,7 +43,8 @@ int main(int argc, char *argv[]) {
         //strcpy(buffer, "  (int1 int, text2 text, float3.1 float, chien3 chien, float4 float, float4 float, float4 float, float4 float, float4 float, float4 float, float4 float, float4 float, float4 float, float4 float, float4 float, float4 float, float4 float ) "); //Simulation d'une requete sql entrée par l'utilisateur
         //strcpy(buffer, " michel = '2', ad = 5 azdazd "); //Simulation d'une requete sql entrée par l'utilisateur
         //strcpy(buffer, "SELECT     nom ,   prenom  FROM latable WHERE nom=5 AND prenom='4' AND feo=54; "); //Simulation d'une requete sql entrée par l'utilisateur
-        strcpy(buffer, "CREATE TABLE latable (    nom primary key,   prenom  float, dz int, nom float, dads int,  test zf) ;"); //Simulation d'une requete sql entrée par l'utilisateur
+        //strcpy(buffer, "CREATE TABLE latable (    nom primary key,   prenom  float, dz int, nom float, dads int,  test zf) ;"); //Simulation d'une requete sql entrée par l'utilisateur
+        strcpy(buffer, "INSERT INTO table_name (field1, ..., fieldN) VALUES (value1, ..., valueN);"); //Simulation d'une requete sql entrée par l'utilisateur
         //strcpy(buffer, "michel = 2;"); //Simulation d'une requete sql entrée par l'utilisateur
         //printf("%s\n", get_sep_space(buffer));
         //printf("%s\n", get_sep_space_and_char(buffer, 'S'));
@@ -108,12 +109,23 @@ int main(int argc, char *argv[]) {
             printf("champ where : %s = %s (%d)\n", resultat.query_content.select_query.where_clause.values.fields[i].column_name, resultat.query_content.select_query.where_clause.values.fields[i].field_value.text_value, resultat.query_content.select_query.where_clause.logic_operator);
         }*/
 
-        query_result_t resultat;
+        /*query_result_t resultat;
         if (parse(buffer, &resultat) == NULL) {printf("retourne null\n");}
         printf("table : %s\n", resultat.query_content.create_query.table_name);
         for (int i=0; i<resultat.query_content.create_query.table_definition.fields_count; i++) {
             printf("champ : %s - type : %d\n", resultat.query_content.create_query.table_definition.definitions[i].column_name, resultat.query_content.create_query.table_definition.definitions[i].column_type);
+        }*/
+
+        query_result_t resultat;
+        if (parse(buffer, &resultat) == NULL) {printf("retourne null\n");}
+        printf("table : %s\n", resultat.query_content.insert_query.table_name);
+        for (int i=0; i<resultat.query_content.insert_query.fields_names.fields_count; i++) {
+            printf("champ : %s\n", resultat.query_content.insert_query.fields_names.fields[i].field_value.text_value);
         }
+        for (int i=0; i<resultat.query_content.insert_query.fields_values.fields_count; i++) {
+            printf("valeurs : %s\n", resultat.query_content.insert_query.fields_values.fields[i].field_value.text_value);
+        }
+        
 
     } else {
         printf("Mode normal : \n");
