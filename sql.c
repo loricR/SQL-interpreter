@@ -196,6 +196,21 @@ char *parse_equality(char *sql, field_record_t *equality) {
 }
 
 char *parse_set_clause(char *sql, table_record_t *result) {
+    if (sql == NULL) {
+        return NULL;
+    }
+    result->fields_count = 0;
+    char *sql_next = sql;
+    do {
+        sql = parse_equality(sql, &result->fields[result->fields_count]);
+        result->fields_count++; //On incrémente le compteur de champs
+        sql_next = get_sep_space_and_char(sql, ',');
+    } while ((sql_next != NULL) && (result->fields_count < MAX_FIELDS_COUNT)); //Tant qu'il y a encore des égalités, donc des ','
+
+    if ((sql_next != NULL) && (result->fields_count >= MAX_FIELDS_COUNT)) {
+        sql = NULL;
+    }
+
     return sql;
 }
 
