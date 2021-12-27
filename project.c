@@ -39,9 +39,10 @@ int main(int argc, char *argv[]) {
     test = getchar();
     if (test == 'o') {
         printf("Mode test : \n");
-        strcpy(buffer, "DROP DATABASE  , champ1 , champ2, 4, 5, 6 , 7, 8, 9, 10, 11, 12, 13 ,14, 15 ,16 FROM table;"); //Simulation d'une requete sql entrée par l'utilisateur
+        //strcpy(buffer, "DROP DATABASE  , champ1 , champ2, 4, 5, 6 , 7, 8, 9, 10, 11, 12, 13 ,14, 15 ,16 FROM table;"); //Simulation d'une requete sql entrée par l'utilisateur
         //strcpy(buffer, "  (int1 int, text2 text, float3.1 float, chien3 chien, float4 float, float4 float, float4 float, float4 float, float4 float, float4 float, float4 float, float4 float, float4 float, float4 float, float4 float, float4 float, float4 float ) "); //Simulation d'une requete sql entrée par l'utilisateur
         //strcpy(buffer, " michel = '2', ad = 5 azdazd "); //Simulation d'une requete sql entrée par l'utilisateur
+        strcpy(buffer, "SELECT     nom ,   prenom  FROM latable WHERE nom=5 AND prenom='4' AND feo=54; "); //Simulation d'une requete sql entrée par l'utilisateur
         //strcpy(buffer, "michel = 2;"); //Simulation d'une requete sql entrée par l'utilisateur
         //printf("%s\n", get_sep_space(buffer));
         //printf("%s\n", get_sep_space_and_char(buffer, 'S'));
@@ -96,7 +97,15 @@ int main(int argc, char *argv[]) {
         }*/
 
         query_result_t resultat;
-        parse(buffer, &resultat);
+        if (parse(buffer, &resultat) == NULL) {printf("retourne null\n");}
+        printf("type : %d\n", resultat.query_type);
+        printf("table : %s\n", resultat.query_content.select_query.table_name);
+        for (int i=0; i<resultat.query_content.select_query.set_clause.fields_count; i++) {
+            printf("champs : %d - %s\n", resultat.query_content.select_query.set_clause.fields_count, resultat.query_content.select_query.set_clause.fields[i].column_name);
+        }
+        for (int i=0; i<resultat.query_content.select_query.where_clause.values.fields_count; i++) {
+            printf("champ where : %s = %s (%d)\n", resultat.query_content.select_query.where_clause.values.fields[i].column_name, resultat.query_content.select_query.where_clause.values.fields[i].field_value.text_value, resultat.query_content.select_query.where_clause.logic_operator);
+        }
 
     } else {
         printf("Mode normal : \n");

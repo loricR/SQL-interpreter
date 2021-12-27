@@ -77,7 +77,7 @@ char *get_field_name(char *sql, char *field_name) {
         }
         sql++;
     } else {
-        while ((i++ < (TEXT_LENGTH-1)) && (*sql != ' ') && (*sql != ',') && (*sql != ';') && (*sql != '\0')) {
+        while ((i++ < (TEXT_LENGTH-1)) && (*sql != ' ') && (*sql != ',') && (*sql != ';') && (*sql != '=') && (*sql != '\0')) {
             *(field_name++) = *(sql++);
         }
     }
@@ -115,6 +115,7 @@ char *parse_fields_or_values_list(char *sql, table_record_t *result) {
         sql = sql_next;
         sql = get_field_name(sql, buffer);
         strcpy(result->fields[result->fields_count].field_value.text_value, buffer); //On rempli text_value avec le champ récupéré par get_field_name
+        strcpy(result->fields[result->fields_count].column_name, buffer); //On rempli column_name avec le champ récupéré par get_field_name
         result->fields_count++; //On incrémente le compteur de champs
 
         sql_next = get_sep_space_and_char(sql, ',');
@@ -189,7 +190,6 @@ char *parse_equality(char *sql, field_record_t *equality) {
     } else {
         sql = sql_next;
     }
-
     sql = get_field_name(sql, buffer);
     strcpy(equality->field_value.text_value, buffer);
     equality->field_type = TYPE_UNKNOWN;
@@ -279,8 +279,34 @@ query_result_t *parse(char *sql, query_result_t *result) {
 }
 
 query_result_t *parse_select(char *sql, query_result_t *result) {
-    printf("parse_select\n");
-    return NULL;
+    char *temp = sql;
+    //Chaque fonction retourne NULL si sql est déjà NULL on peut donc exécuter les fonctions en cascade
+    //Si sql est NULL sur une des fonction, on rentrera dans la fonction pour rien
+    //Par lisibilité on met une ligne par fonction plutôt que de tout faire en une seule
+    sql = get_keyword(sql, "SELECT"); //On récupère le select
+    sql = get_sep_space(sql);
+    result->query_type = QUERY_SELECT;
+    sql = parse_fields_or_values_list(sql, &result->query_content.select_query.set_clause); //On récupère la liste des champs du SELECT
+    sql = get_sep_space(sql);
+    sql = get_keyword(sql, "FROM");
+    sql = get_sep_space(sql);
+    sql = get_field_name(sql, result->query_content.select_query.table_name); //On récupère le nom de la table
+    sql = get_sep_space(sql);
+    temp = get_keyword(sql, "WHERE");
+    if (temp != NULL) { //S'il y a une clause WHERE on la traite, sinon on a fini de parser la requête
+        sql = temp;
+        sql = get_sep_space(sql);
+        sql = parse_where_clause(sql, &result->query_content.select_query.where_clause); //On récupère la clause WHERE
+    }
+    if (!has_reached_sql_end(sql)) {
+        return NULL;
+    }
+
+    if (sql == NULL) { 
+        return NULL;
+    }
+
+    return result;
 }
 
 query_result_t *parse_create(char *sql, query_result_t *result) {
