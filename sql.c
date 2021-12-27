@@ -210,6 +210,7 @@ char *parse_set_clause(char *sql, table_record_t *result) {
     result->fields_count = 0;
     char *sql_next = sql;
     do {
+        sql = sql_next;
         sql = parse_equality(sql, &result->fields[result->fields_count]);
         result->fields_count++; //On incrémente le compteur de champs
         sql_next = get_sep_space_and_char(sql, ',');
@@ -255,6 +256,10 @@ char *parse_where_clause(char *sql, filter_t *filter) {
 
         filter->values.fields_count++; //On incrémente le compteur de champs
     } while ((sql_next != NULL) && (filter->values.fields_count < MAX_FIELDS_COUNT)); //Tant qu'il y a encore des égalités, donc des OR ou AND
+
+    if ((sql_next != NULL) && (filter->values.fields_count >= MAX_FIELDS_COUNT)) {
+        sql = NULL;
+    }
 
     return sql;
 }
@@ -345,14 +350,34 @@ query_result_t *parse_insert(char *sql, query_result_t *result) {
 
     if ((!has_reached_sql_end(sql)) || (sql == NULL)) {
             return NULL;
-        }
+    }
 
     return result;
 }
 
 query_result_t *parse_update(char *sql, query_result_t *result) {
-    printf("parse_update\n");
-    return NULL;
+    char *temp;
+    sql = get_keyword(sql, "UPDATE");
+    sql = get_sep_space(sql);
+    result->query_type = QUERY_UPDATE;
+    sql = get_field_name(sql, result->query_content.update_query.table_name); //On récupère le nom de la table
+    sql = get_sep_space(sql);
+    sql = get_keyword(sql, "SET");
+    sql = get_sep_space(sql);
+    sql = parse_set_clause(sql, &result->query_content.update_query.set_clause);
+    sql = get_sep_space(sql);
+    temp = get_keyword(sql, "WHERE");
+    if (temp != NULL) { //S'il y a une clause WHERE on la traite, sinon on a fini de parser la requête
+        sql = temp;
+        sql = get_sep_space(sql);
+        sql = parse_where_clause(sql, &result->query_content.update_query.where_clause); //On récupère la clause WHERE
+    }
+    
+    if ((!has_reached_sql_end(sql)) || (sql == NULL)) {
+            return NULL;
+    }
+
+    return result;
 }
 
 query_result_t *parse_delete(char *sql, query_result_t *result) {
