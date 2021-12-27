@@ -130,6 +130,47 @@ char *parse_fields_or_values_list(char *sql, table_record_t *result) {
 
 
 char *parse_create_fields_list(char *sql, table_definition_t *result) {
+    if (sql == NULL) {
+        return NULL;
+    }
+    sql = get_sep_space(sql);
+    sql = get_sep_space_and_char(sql, '(');
+
+    char buffer[TEXT_LENGTH];
+    char *sql_next = sql;
+    do {
+        sql = sql_next;
+        sql = get_field_name(sql, buffer);
+        strcpy(result->definitions[result->fields_count].column_name, buffer); //On rempli column_name avec le champ récupéré par get_field_name
+        sql = get_field_name(sql, buffer);
+
+        if (buffer[strlen(buffer)-1] == ')') {
+            buffer[strlen(buffer)-1] = '\0';
+        }
+        for (int i=0; i<strlen(buffer); i++) {
+            buffer[i] = toupper(buffer[i]);
+        }
+        if (strcmp(buffer, "INT") == 0) {
+            result->definitions[result->fields_count].column_type = TYPE_INTEGER; //On rempli column_type avec le champ récupéré par get_field_name    
+        } else if (strcmp(buffer, "PRIMARY KEY") == 0) {
+            result->definitions[result->fields_count].column_type = TYPE_PRIMARY_KEY; //On rempli column_type avec le champ récupéré par get_field_name
+        } else if (strcmp(buffer, "FLOAT") == 0) {
+            result->definitions[result->fields_count].column_type = TYPE_FLOAT; //On rempli column_type avec le champ récupéré par get_field_name
+        } else if (strcmp(buffer, "TEXT") == 0) {
+            result->definitions[result->fields_count].column_type = TYPE_TEXT; //On rempli column_type avec le champ récupéré par get_field_name
+        } else {
+            result->definitions[result->fields_count].column_type = TYPE_UNKNOWN; //On rempli column_type avec le champ récupéré par get_field_name
+        }
+        result->fields_count++; //On incrémente le compteur de champs
+
+        sql_next = get_sep_space_and_char(sql, ',');
+    } while ((sql != sql_next) && (result->fields_count < MAX_FIELDS_COUNT));
+
+    if ((sql != sql_next) && (result->fields_count >= MAX_FIELDS_COUNT)) {
+        sql = NULL;
+    }
+    sql = get_sep_space_and_char(sql, ')');
+
     return sql;
 }
 
