@@ -175,6 +175,26 @@ char *parse_create_fields_list(char *sql, table_definition_t *result) {
 }
 
 char *parse_equality(char *sql, field_record_t *equality) {
+    if (sql == NULL) {
+        return NULL;
+    }
+    sql = get_sep_space(sql);
+
+    char buffer[TEXT_LENGTH];
+    sql = get_field_name(sql, buffer);
+    strcpy(equality->column_name, buffer);
+
+    char *sql_next = get_sep_space_and_char(sql, '=');
+    if (sql == sql_next) { //Si le pointeur sql n'a pas bougé, le '=' n'a pas été trouvé
+        return NULL;
+    } else {
+        sql = sql_next;
+    }
+
+    sql = get_field_name(sql, buffer);
+    strcpy(equality->field_value.text_value, buffer);
+    equality->field_type = TYPE_UNKNOWN;
+
     return sql;
 }
 
