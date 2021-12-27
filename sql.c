@@ -22,7 +22,6 @@ char *get_sep_space(char *sql) {
 }
 
 char *get_sep_space_and_char(char *sql, char c) {
-    char *backup = sql;
     sql = get_sep_space(sql); //On passe tous les espaces devant le caract
     if (sql == NULL) {
         printf("Erreur sql=NULL dans get_sep_space_and_char\n");
@@ -30,9 +29,8 @@ char *get_sep_space_and_char(char *sql, char c) {
         //Si le caract est celui demandé, on passe tous les espaces après
         sql = get_sep_space(sql+1);
     } else {
-        //Si le caract n'est pas celui demandé, on rétabli sql comme initialement
-        printf("Erreur rencontree dans fonction get_sep_space_and_char\n");
-        sql = backup;
+        //Si le caractere n'est pas celui demandé, on retourne NULL
+        sql = NULL;
     }
 
     return sql;
@@ -42,7 +40,6 @@ char *get_keyword(char *sql, char *keyword) {
     if (sql == NULL) {
         return NULL;
     }
-    char *backup = sql;
     int different = 0;
     int longueur = strlen(keyword);
     if (longueur <= strlen(sql)) { //Keyword ne doit pas être plus grand que sql
@@ -55,7 +52,7 @@ char *get_keyword(char *sql, char *keyword) {
         different = 1;
     }
 
-    //Si les deux mots sont differents ou que keyword est plus grand que sql, on rétablit sql comme initialement
+    //Si les deux mots sont differents ou si keyword est plus grand que sql, il y a erreur
     if (different) {
         sql = NULL;
     }
