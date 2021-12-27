@@ -77,7 +77,7 @@ char *get_field_name(char *sql, char *field_name) {
         }
         sql++;
     } else {
-        while ((i++ < (TEXT_LENGTH-1)) && (*sql != ' ') && (*sql != ',') && (*sql != ';') && (*sql != '=') && (*sql != '\0')) {
+        while ((i++ < (TEXT_LENGTH-1)) && (*sql != ' ') && (*sql != ',') && (*sql != ';') && (*sql != ')') && (*sql != '=') && (*sql != '\0')) {
             *(field_name++) = *(sql++);
         }
     }
@@ -152,8 +152,14 @@ char *parse_create_fields_list(char *sql, table_definition_t *result) {
         }
         if (strcmp(buffer, "INT") == 0) {
             result->definitions[result->fields_count].column_type = TYPE_INTEGER; //On rempli column_type avec le champ récupéré par get_field_name    
-        } else if (strcmp(buffer, "PRIMARY KEY") == 0) {
-            result->definitions[result->fields_count].column_type = TYPE_PRIMARY_KEY; //On rempli column_type avec le champ récupéré par get_field_name
+        } else if (strcmp(buffer, "PRIMARY") == 0) {
+            sql = get_field_name(sql, buffer);
+            for (int i=0; i<strlen(buffer); i++) {
+                buffer[i] = toupper(buffer[i]);
+            }
+            if (strcmp(buffer, "KEY") == 0) {
+                result->definitions[result->fields_count].column_type = TYPE_PRIMARY_KEY; //On rempli column_type avec le champ récupéré par get_field_name
+            } 
         } else if (strcmp(buffer, "FLOAT") == 0) {
             result->definitions[result->fields_count].column_type = TYPE_FLOAT; //On rempli column_type avec le champ récupéré par get_field_name
         } else if (strcmp(buffer, "TEXT") == 0) {
@@ -298,11 +304,7 @@ query_result_t *parse_select(char *sql, query_result_t *result) {
         sql = get_sep_space(sql);
         sql = parse_where_clause(sql, &result->query_content.select_query.where_clause); //On récupère la clause WHERE
     }
-    if (!has_reached_sql_end(sql)) {
-        return NULL;
-    }
-
-    if (sql == NULL) { 
+    if ((!has_reached_sql_end(sql)) || (sql == NULL)) {
         return NULL;
     }
 
@@ -310,8 +312,19 @@ query_result_t *parse_select(char *sql, query_result_t *result) {
 }
 
 query_result_t *parse_create(char *sql, query_result_t *result) {
-    printf("parse_create\n");
-    return NULL;
+    sql = get_keyword(sql, "CREATE");
+    sql = get_sep_space(sql);
+    sql = get_keyword(sql, "TABLE");
+    sql = get_sep_space(sql);
+    result->query_type = QUERY_CREATE_TABLE;
+    sql = get_field_name(sql, result->query_content.create_query.table_name); //On récupère le nom de la table
+    sql = parse_create_fields_list(sql, &result->query_content.create_query.table_definition); //On récupère les champs du create
+
+    if ((!has_reached_sql_end(sql)) || (sql == NULL)) {
+        return NULL;
+    }
+
+    return result;
 }
 
 query_result_t *parse_insert(char *sql, query_result_t *result) {
