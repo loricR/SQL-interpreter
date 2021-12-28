@@ -118,6 +118,9 @@ void create_table(create_query_t *table_definition) {
  * @param table_name the name of the dropped table.
  */
 void drop_table(char *table_name) {
+    if (table_exists(table_name)) {
+        recursive_rmdir(table_name);
+    }
 }
 
 /*!
