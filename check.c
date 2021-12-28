@@ -169,6 +169,9 @@ bool check_query_delete(delete_query_t *query) {
  * @return true if valid, false if invalid
  */
 bool check_query_drop_table(char *table_name) {
+    if (table_exists(table_name)) {
+        return true;
+    }
     return false;
 }
 
