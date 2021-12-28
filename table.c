@@ -14,7 +14,7 @@
  * @return and pointer to a FILE type, resulting from the fopen function
  */
 FILE *open_definition_file(char *table_name, char *mode) {
-    FILE *fptr = fopen(table_name/definition, mode);
+    FILE *fptr = fopen(table_name/def, mode);
     if (fptr != NULL) {
         return fptr;
     }
@@ -28,6 +28,10 @@ FILE *open_definition_file(char *table_name, char *mode) {
  * @return and pointer to a FILE type, resulting from the fopen function
  */
 FILE *open_index_file(char *table_name, char *mode) {
+    FILE *fptr = fopen(table_name/idx, mode);
+    if (fptr != NULL) {
+        return fptr;
+    }
     return NULL;
 }
 
