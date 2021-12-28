@@ -18,13 +18,23 @@ void execute(query_result_t *query) {
         case QUERY_INSERT:
             execute_insert(&query->query_content.insert_query);
             break;
+        case QUERY_SELECT:
+            execute_select(&query->query_content.select_query);
+            break;
+        case QUERY_UPDATE:
+            execute_update(&query->query_content.update_query);
+            break;
+        case QUERY_DELETE:
+            execute_delete(&query->query_content.delete_query);
+            break;
         case QUERY_DROP_TABLE:
             execute_drop_table(query->query_content.table_name);
             break;
         case QUERY_DROP_DB:
             execute_drop_database(query->query_content.database_name);
             break;
-            /* etc. */ 
+        default:
+            break; 
     }
 }
 
