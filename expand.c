@@ -34,6 +34,11 @@ void expand_insert(insert_query_t *query) {
 }
 
 bool is_field_in_record(table_record_t *record, char *field_name) {
+    for (int i = 0; i<record->fields_count; ++i) {
+        if (strcmp(record->fields[i].column_name, field_name) == 0) {
+            return true;
+        }
+    }
     return false;
 }
 
