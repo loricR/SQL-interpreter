@@ -47,6 +47,10 @@ FILE *open_key_file(char *table_name, char *mode) {
     return NULL;
 }
 
+int table_exists(char *table_name) {
+    return 0;
+}
+
 /*!
  * @brief function create_table creates the files for a new table. It checks if the table doesn't already exist,
  * creates its directory, its definition file, whose content is written based on the definition. It creates both

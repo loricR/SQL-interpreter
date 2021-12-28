@@ -198,7 +198,7 @@ bool check_query_drop_db(char *db_name) {
 bool check_fields_list(table_record_t *fields_list, table_definition_t *table_definition) {
     bool response = true;
     for (int i=0; i<fields_list->fields_count; i++) {
-        if (find_field_definition(&fields_list->fields[i], table_definition) == NULL) {
+        if (find_field_definition(&fields_list->fields[i].column_name, table_definition) == NULL) {
             response = false;
         }
     }
@@ -219,7 +219,7 @@ bool check_value_types(table_record_t *fields_list, table_definition_t *table_de
     bool response = true;
     field_definition_t *field_definition;
     for (int i=0; i<fields_list->fields_count; i++) { //Pour chaque champ de la liste
-        field_definition = find_field_definition(&fields_list->fields[i], table_definition);
+        field_definition = find_field_definition(&fields_list->fields[i].column_name, table_definition);
         if (field_definition == NULL) {
             response = false;
         }
