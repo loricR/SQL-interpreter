@@ -31,6 +31,18 @@ void expand_select(update_or_select_query_t *query) {
 }
 
 void expand_insert(insert_query_t *query) {
+    table_definition_t *table_definition;
+
+    table_definition = get_table_definition(&query->table_name, &table_definition);
+    for (int i=0; i<table_definition->fields_count; i++) {
+        if (is_field_in_record(&query->fields_names, table_definition->definitions[i].column_name)) {
+            strcpy(query->fields_names.fields[query->fields_names.fields_count].column_name, table_definition->definitions[i].column_name); //On rajoute le champ qui n'a pas été trouvé
+            query->fields_names.fields_count++;
+            query->fields_values.fields[query->fields_values.fields_count].field_type = table_definition->definitions[i].column_type; //On met à jour le type de valeur
+            make_default_value(&query->fields_values.fields[query->fields_values.fields_count], query->table_name); //On met la valeur par défaut
+            query->fields_values.fields_count++;
+        }
+    }
 }
 
 bool is_field_in_record(table_record_t *record, char *field_name) {
