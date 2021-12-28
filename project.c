@@ -46,7 +46,8 @@ int main(int argc, char *argv[]) {
         //strcpy(buffer, "CREATE TABLE latable (    nom primary key,   prenom  float, dz int, nom float, dads int,  test zf) ;"); //Simulation d'une requete sql entrée par l'utilisateur
         //strcpy(buffer, "INSERT INTO table_name (field1, ..., fieldN) VALUES (value1, ..., valueN);"); //Simulation d'une requete sql entrée par l'utilisateur
         //strcpy(buffer, "UPDATE client SET rue = '49 Rue Ameline', ville = 'Saint-Eustache-la-Forêt', code_postal = '76210' WHERE id = 2 AND da = 5;"); //Simulation d'une requete sql entrée par l'utilisateur
-        strcpy(buffer, "DELETE FROM utilisateur WHERE id = 1 and azd = 4;");
+        //strcpy(buffer, "DELETE FROM utilisateur WHERE id = 1 and azd = 4;");
+        strcpy(buffer, "DROP db db_name ;");
         //strcpy(buffer, "michel = 2;"); //Simulation d'une requete sql entrée par l'utilisateur
         //printf("%s\n", get_sep_space(buffer));
         //printf("%s\n", get_sep_space_and_char(buffer, 'S'));
@@ -138,12 +139,16 @@ int main(int argc, char *argv[]) {
             printf("where : %s - %s\n", resultat.query_content.update_query.where_clause.values.fields[i].column_name, resultat.query_content.update_query.where_clause.values.fields[i].field_value.text_value);
         }*/
 
-        query_result_t resultat;
+        /*query_result_t resultat;
         if (parse(buffer, &resultat) == NULL) {printf("retourne null\n");}
         printf("table : %s\n", resultat.query_content.delete_query.table_name);
         for (int i=0; i<resultat.query_content.delete_query.where_clause.values.fields_count; i++) {
             printf("where : %s - %s\n", resultat.query_content.delete_query.where_clause.values.fields[i].column_name, resultat.query_content.delete_query.where_clause.values.fields[i].field_value.text_value);
-        }
+        }*/
+
+        query_result_t resultat;
+        if (parse(buffer, &resultat) == NULL) {printf("retourne null\n");}
+        printf("base : %s\n", resultat.query_content.database_name);
 
     } else {
         printf("Mode normal : \n");

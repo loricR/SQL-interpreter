@@ -283,6 +283,8 @@ query_result_t *parse(char *sql, query_result_t *result) {
         result = parse_delete(sql, result);
     } else if (get_keyword(sql, "DROP DATABASE") != NULL) {
         result = parse_drop_db(sql, result);
+    } else if (get_keyword(sql, "DROP DB") != NULL) {
+        result = parse_drop_db(sql, result);
     } else if (get_keyword(sql, "DROP TABLE") != NULL) {
         result = parse_drop_table(sql, result);
     }
@@ -404,8 +406,24 @@ query_result_t *parse_delete(char *sql, query_result_t *result) {
 }
 
 query_result_t *parse_drop_db(char *sql, query_result_t *result) {
-    printf("parse_drop_db\n");
-    return NULL;
+    char *temp;
+    sql = get_keyword(sql, "DROP");
+    sql = get_sep_space(sql);
+    temp = get_keyword(sql, "DATABASE");
+    if (temp == NULL) { //La requête est valide que ce soit "drop database" ou "drop db"
+        sql = get_keyword(sql, "DB");
+    } else {
+        sql = temp;
+    }
+    sql = get_sep_space(sql);
+    result->query_type = QUERY_DROP_DB;
+    sql = get_field_name(sql, result->query_content.database_name); //On récupère le nom de la BDD
+
+    if ((!has_reached_sql_end(sql)) || (sql == NULL)) {
+        return NULL;
+    }
+
+    return result;
 }
 
 query_result_t *parse_drop_table(char *sql, query_result_t *result) {
