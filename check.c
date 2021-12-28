@@ -5,6 +5,7 @@
 #include "check.h"
 
 #include <stdio.h>
+#include <stdlib.h>
 #include <unistd.h>
 #include <linux/limits.h>
 
@@ -272,7 +273,44 @@ field_definition_t *find_field_definition(char *field_name, table_definition_t *
  * @return true if valid (and converted), false if invalid
  */
 bool is_value_valid(field_record_t *value, field_definition_t *field_definition) {
-    return false;
+    char *eptr;
+    bool response = false;
+
+    if (strcmp(value->column_name, field_definition->column_name) == 0) {
+        switch(field_definition->column_type) {
+            case TYPE_INTEGER:
+                if (is_int(value->field_value.text_value)) {
+                    value->field_type = TYPE_INTEGER;
+                    value->field_value.int_value = strtoll(value->field_value.text_value, &eptr, 10); //Pas d'erreur car déjà testé dans is_int
+                    response = true;
+                }
+                break;
+            case TYPE_FLOAT:
+                if (is_float(value->field_value.text_value)) {
+                    value->field_type = TYPE_FLOAT;
+                    value->field_value.float_value = strtod(value->field_value.text_value, &eptr); //Pas d'erreur car déjà testé dans is_float
+                    response = true;
+                }
+                break;
+            case TYPE_PRIMARY_KEY:
+                if (is_key(value->field_value.text_value)) {
+                    value->field_type = TYPE_PRIMARY_KEY;
+                    value->field_value.primary_key_value = strtoull(value->field_value.text_value, &eptr, 10); //Pas d'erreur car déjà testé dans is_float
+                    response = true;
+                }
+                break;
+            case TYPE_TEXT:
+                value->field_type = TYPE_TEXT;
+                response = true;
+                break;
+            default:
+                value->field_type = TYPE_UNKNOWN;
+                response = false;
+                break;
+        }
+    } 
+
+    return response;
 }
 
 /*!
@@ -282,6 +320,15 @@ bool is_value_valid(field_record_t *value, field_definition_t *field_definition)
  * @return true if value can be converted into an integer, false if it cannot
  */
 bool is_int(char *value) {
+    char *eptr;                             // First caracter non-converted by strtoll
+    long long result; 
+
+    result = strtoll(value, &eptr, 10);    // Convert to a decimal long long
+
+    if (value[*eptr] == '\0') {             // The entire string has been converted
+        return true;
+    } 
+
     return false;
 }
 
@@ -292,15 +339,32 @@ bool is_int(char *value) {
  * @return true if value can be converted into a double, false if it cannot
  */
 bool is_float(char *value) {
+    char *eptr;
+    double result;
+
+    result = strtod(value, &eptr);     // Convert to a double
+    if (value[*eptr] == '\0') {         // The entire string has been converted
+        return true;
+    } 
+
     return false;
 }
 
 /*!
- * @brief function is_int tests if the string value is a text representation of a key value.
+ * @brief function is_key tests if the string value is a text representation of a key value.
  * You may use strtoull for this test.
  * @param value the text representation to test
  * @return true if value can be converted into a key, false if it cannot
  */
 bool is_key(char *value) {
+    char *eptr;
+    unsigned long long result;
+
+    result = strtoull(value, &eptr, 10);   // Convert to a decimal unsigned long         
+
+    if (value[*eptr] == '\0') {             // The entire string has been converted
+        return true;
+    } 
+
     return false;
 }
