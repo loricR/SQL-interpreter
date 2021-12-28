@@ -48,6 +48,10 @@ FILE *open_content_file(char *table_name, char *mode) {
  * @return and pointer to a FILE type, resulting from the fopen function
  */
 FILE *open_key_file(char *table_name, char *mode) {
+    FILE *fptr = fopen(table_name/key, mode);
+    if (fptr != NULL) {
+        return fptr;
+    }
     return NULL;
 }
 
