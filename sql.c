@@ -427,6 +427,16 @@ query_result_t *parse_drop_db(char *sql, query_result_t *result) {
 }
 
 query_result_t *parse_drop_table(char *sql, query_result_t *result) {
-    printf("parse_drop_table\n");
-    return NULL;
+    sql = get_keyword(sql, "DROP");
+    sql = get_sep_space(sql);
+    sql = get_keyword(sql, "TABLE");
+    sql = get_sep_space(sql);
+    result->query_type = QUERY_DROP_TABLE;
+    sql = get_field_name(sql, result->query_content.table_name); //On récupère le nom de la table
+
+    if ((!has_reached_sql_end(sql)) || (sql == NULL)) {
+        return NULL;
+    }
+
+    return result;
 }
