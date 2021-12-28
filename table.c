@@ -96,7 +96,11 @@ FILE *open_key_file(char *table_name, char *mode) {
 }
 
 int table_exists(char *table_name) {
-    return 0;
+    if (directory_exists(table_name)) {
+        return 1;
+    } else {
+        return 0;
+    }
 }
 
 /*!
