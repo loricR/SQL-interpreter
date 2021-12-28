@@ -124,6 +124,19 @@ bool check_query_create(create_query_t *query) {
  * @return true if valid, false if invalid
  */
 bool check_query_insert(insert_query_t *query) {
+    table_definition_t table_definition;
+    table_definition_t *retour_definition = get_table_definition(query->table_name, &table_definition); //TODO : voir comment la fonction retourne pour savoir si on utilise retour_definition ou pas
+    
+    if (retour_definition != NULL) { //Si la table existe
+        if (check_fields_list(&query->fields_names, &table_definition)) { //Si les champs avant VALUES existes tous
+            if (check_value_types(&query->fields_values, &table_definition)) { //Si les types des valeurs après VALUES sont bons
+                if (query->fields_names.fields_count == query->fields_values.fields_count) { //Si le nombre de champs est égal au nombre de valeurs
+                    return true;
+                }
+            }
+        }
+    }
+    
     return false;
 }
 
