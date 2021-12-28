@@ -105,6 +105,10 @@ bool check_query_update(update_or_select_query_t *query) {
  * @return true if valid, false if invalid
  */
 bool check_query_create(create_query_t *query) {
+    if (!table_exists(query->table_name)) { //Si la table n'existe pas
+        return true;
+    }
+
     return false;
 }
 
