@@ -34,10 +34,10 @@ bool check_query(query_result_t *query) {
             return check_query_delete(&query->query_content.delete_query);
             break;
         case QUERY_DROP_TABLE:
-            return check_query_drop_table(&query->query_content.table_name);
+            return check_query_drop_table(query->query_content.table_name);
             break;
         case QUERY_DROP_DB:
-            return check_query_drop_db(&query->query_content.database_name);
+            return check_query_drop_db(query->query_content.database_name);
             break;
 
         default:
@@ -57,6 +57,18 @@ bool check_query(query_result_t *query) {
  * @return true if valid, false if invalid
  */
 bool check_query_select(update_or_select_query_t *query) {
+    table_definition_t table_definition;
+    table_definition_t *retour_definition = get_table_definition(query->table_name, &table_definition); //TODO : voir comment la fonction retourne pour savoir si on utilise retour_definition ou pas
+
+    if (get_table_definition(query->table_name, &table_definition) != NULL) { //Si la table existe
+        if (check_fields_list(&query->set_clause, &table_definition)) { //Si les champs de la liste de champs existent tous
+            if (check_fields_list(&query->where_clause.values, &table_definition)) { //Si les champs de la liste de champs dans le where existent tous
+                if (check_value_types(&query->where_clause.values, &table_definition)) { //Si les types dans le where sont correctes
+                    return true;
+                }
+            }
+        }
+    }
     return false;
 }
 
