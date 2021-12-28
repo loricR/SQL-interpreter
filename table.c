@@ -38,6 +38,18 @@ FILE *open_index_file(char *table_name, char *mode) {
  * @return and pointer to a FILE type, resulting from the fopen function
  */
 FILE *open_content_file(char *table_name, char *mode) {
+    char ext[] = ".data";
+    char *full_path;
+    size_t full_len = 2 * strlen(table_name) + 7;
+    full_path = (char *) malloc(sizeof(char) * full_len);
+    full_path = make_full_path(table_name, table_name);
+    strcat(full_path,ext);
+    printf("%s", full_path);
+    FILE *fptr = fopen(full_path, mode);
+    free(full_path);
+    if (fptr != NULL) {
+        return fptr;
+    }
     return NULL;
 }
 
