@@ -15,6 +15,15 @@
  *  \return a pointer to the full path. Its content must be freed by make_full_path caller.
  */
 char *make_full_path(char *path, char *basename) {
+    if (path == NULL) {
+        return basename;
+    } else if (basename != NULL) {
+        char *full_path;
+        full_path = (char *) malloc(sizeof(char)*(strlen(path)+strlen(basename)));
+        strcat(full_path, path);
+        strcat(full_path, basename);
+        return full_path;
+    }
     return NULL;
 }
 
