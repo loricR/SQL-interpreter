@@ -39,7 +39,7 @@ void recursive_rmdir(char *dirname) {
 
             len = path_len + strlen(ptr->d_name) + 2;
             buf = (char *) malloc(sizeof(char) * len);
-            sprintf(buf,"%s/%s",dirname,ptr->d_name);
+            buf = make_full_path(dirname, ptr->d_name);
 
             if (!stat(buf, &statbuf)) {
                 if (S_ISDIR(statbuf.st_mode)) {

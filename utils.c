@@ -20,8 +20,7 @@ char *make_full_path(char *path, char *basename) {
     } else if (basename != NULL) {
         char *full_path;
         full_path = (char *) malloc(sizeof(char)*(strlen(path)+strlen(basename)));
-        strcat(full_path, path);
-        strcat(full_path, basename);
+        sprintf(full_path,"%s/%s",path,basename);
         return full_path;
     }
     return NULL;
