@@ -60,7 +60,7 @@ bool check_query_select(update_or_select_query_t *query) {
     table_definition_t table_definition;
     table_definition_t *retour_definition = get_table_definition(query->table_name, &table_definition); //TODO : voir comment la fonction retourne pour savoir si on utilise retour_definition ou pas
 
-    if (get_table_definition(query->table_name, &table_definition) != NULL) { //Si la table existe
+    if (retour_definition != NULL) { //Si la table existe
         if (check_fields_list(&query->set_clause, &table_definition)) { //Si les champs de la liste de champs existent tous
             if (check_fields_list(&query->where_clause.values, &table_definition)) { //Si les champs de la liste de champs dans le where existent tous
                 if (check_value_types(&query->where_clause.values, &table_definition)) { //Si les types dans le where sont correctes
@@ -81,6 +81,21 @@ bool check_query_select(update_or_select_query_t *query) {
  * @return true if valid, false if invalid
  */
 bool check_query_update(update_or_select_query_t *query) {
+    table_definition_t table_definition;
+    table_definition_t *retour_definition = get_table_definition(query->table_name, &table_definition); //TODO : voir comment la fonction retourne pour savoir si on utilise retour_definition ou pas
+    
+    if (retour_definition != NULL) { //Si la table existe
+        if (check_fields_list(&query->set_clause, &table_definition)) { //Si les champs du set existent tous
+            if (check_value_types(&query->set_clause, &table_definition)) { //Si les types des champs du set sont bons
+                if (check_fields_list(&query->where_clause.values, &table_definition)) { //Si les champs du where existent tous
+                    if (check_value_types(&query->where_clause.values, &table_definition)) { //Si les types des champs du where sont bons
+                        return true;
+                    }
+                }
+            }
+        }
+    }
+
     return false;
 }
 
