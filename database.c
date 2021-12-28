@@ -43,11 +43,9 @@ void recursive_rmdir(char *dirname) {
 
             if (!stat(buf, &statbuf)) {
                 if (S_ISDIR(statbuf.st_mode)) {
-                    //r = unlinkat(dirfd(rep),buf,AT_REMOVEDIR);
                     r = rmdir(buf);
                     if (r != 0) {
                         recursive_rmdir(buf);
-                        //r = unlinkat(dirfd(rep),buf,AT_REMOVEDIR);
                         r = rmdir(buf);
                     }
                 } else {
