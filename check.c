@@ -5,6 +5,7 @@
 #include "check.h"
 
 #include <stdio.h>
+#include <dirent.h>
 #include <unistd.h>
 #include <linux/limits.h>
 
@@ -181,6 +182,11 @@ bool check_query_drop_table(char *table_name) {
  * @return true if valid, false if invalid
  */
 bool check_query_drop_db(char *db_name) {
+    DIR *dir;
+    if (dir = opendir(db_name)) {
+        closedir(dir);
+        return true;
+    }
     return false;
 }
 
