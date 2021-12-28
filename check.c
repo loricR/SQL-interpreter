@@ -204,7 +204,7 @@ bool check_value_types(table_record_t *fields_list, table_definition_t *table_de
         if (find_field_definition(&fields_list->fields[i], table_definition) == NULL){
             response = false;
         }
-        else if (find_field_definition(&fields_list->fields[i], table_definition)->column_type != fields_list->fields[i].field_type) {
+        else if (!is_value_valid(&fields_list->fields[i], find_field_definition(&fields_list->fields[i], table_definition))) {
             response = false;
         }
     }
