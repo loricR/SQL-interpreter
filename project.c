@@ -47,7 +47,7 @@ int main(int argc, char *argv[]) {
         //strcpy(buffer, "INSERT INTO table_name (field1, ..., fieldN) VALUES (value1, ..., valueN);"); //Simulation d'une requete sql entrée par l'utilisateur
         //strcpy(buffer, "UPDATE client SET rue = '49 Rue Ameline', ville = 'Saint-Eustache-la-Forêt', code_postal = '76210' WHERE id = 2 AND da = 5;"); //Simulation d'une requete sql entrée par l'utilisateur
         //strcpy(buffer, "DELETE FROM utilisateur WHERE id = 1 and azd = 4;");
-        strcpy(buffer, "DROP db db_name ;");
+        strcpy(buffer, "DROP table db_name; ");
         //strcpy(buffer, "michel = 2;"); //Simulation d'une requete sql entrée par l'utilisateur
         //printf("%s\n", get_sep_space(buffer));
         //printf("%s\n", get_sep_space_and_char(buffer, 'S'));
@@ -148,7 +148,7 @@ int main(int argc, char *argv[]) {
 
         query_result_t resultat;
         if (parse(buffer, &resultat) == NULL) {printf("retourne null\n");}
-        printf("base : %s\n", resultat.query_content.database_name);
+        printf("table : %s\n", resultat.query_content.table_name);
 
     } else {
         printf("Mode normal : \n");
