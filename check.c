@@ -214,15 +214,17 @@ bool check_fields_list(table_record_t *fields_list, table_definition_t *table_de
  */
 bool check_value_types(table_record_t *fields_list, table_definition_t *table_definition) {
     bool response = true;
+    field_definition_t *field_definition;
     for (int i=0; i<fields_list->fields_count; i++) { //Pour chaque champ de la liste
-        if (find_field_definition(&fields_list->fields[i], table_definition) == NULL){
+        field_definition = find_field_definition(&fields_list->fields[i], table_definition);
+        if (field_definition == NULL) {
             response = false;
         }
-        else if (!is_value_valid(&fields_list->fields[i], find_field_definition(&fields_list->fields[i], table_definition))) {
+        else if (!is_value_valid(&fields_list->fields[i], field_definition)) {
             response = false;
         }
     }
-    return false;
+    return response;
 }
 
 /*!
