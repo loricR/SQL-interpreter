@@ -135,7 +135,13 @@ bool check_query_drop_db(char *db_name) {
  * @return true if all fields belong to table, false else
  */
 bool check_fields_list(table_record_t *fields_list, table_definition_t *table_definition) {
-    return false;
+    bool response = true;
+    for (int i=0; i<fields_list->fields_count; i++) {
+        if (find_field_definition(&fields_list->fields[i], table_definition) == NULL) {
+            response = false;
+        }
+    }
+    return response;
 }
 
 /*!
