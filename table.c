@@ -38,6 +38,10 @@ FILE *open_index_file(char *table_name, char *mode) {
  * @return and pointer to a FILE type, resulting from the fopen function
  */
 FILE *open_content_file(char *table_name, char *mode) {
+    FILE *fptr = fopen(table_name/data, mode);
+    if (fptr != NULL) {
+        return fptr;
+    }
     return NULL;
 }
 
