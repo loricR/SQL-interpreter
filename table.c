@@ -96,11 +96,24 @@ FILE *open_key_file(char *table_name, char *mode) {
 }
 
 int table_exists(char *table_name) {
+    FILE *f;
     if (directory_exists(table_name)) {
-        return 1;
-    } else {
-        return 0;
+        f = open_definition_file(table_name, "r");
+        if (f != NULL) {
+            fclose(f);
+            f = open_index_file(table_name, "r");
+            if (f != NULL) {
+                fclose(f);
+                f = open_content_file(table_name, "r");
+                if (f != NULL) {
+                    fclose(f);
+                    return 1;
+                }
+            }
+        }
     }
+    
+    return 0;
 }
 
 /*!
