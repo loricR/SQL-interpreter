@@ -155,6 +155,15 @@ bool check_fields_list(table_record_t *fields_list, table_definition_t *table_de
  * @return true if all fields belong to table and their value types are correct, false else
  */
 bool check_value_types(table_record_t *fields_list, table_definition_t *table_definition) {
+    bool response = true;
+    for (int i=0; i<fields_list->fields_count; i++) { //Pour chaque champ de la liste
+        if (find_field_definition(&fields_list->fields[i], table_definition) == NULL){
+            response = false;
+        }
+        else if (find_field_definition(&fields_list->fields[i], table_definition)->column_type != fields_list->fields[i].field_type) {
+            response = false;
+        }
+    }
     return false;
 }
 
