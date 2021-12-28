@@ -22,6 +22,7 @@ FILE *open_definition_file(char *table_name, char *mode) {
     strcat(full_path,ext);
     printf("%s", full_path);
     FILE *fptr = fopen(full_path, mode);
+    free(full_path);
     if (fptr != NULL) {
         return fptr;
     }
