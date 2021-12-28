@@ -149,6 +149,17 @@ bool check_query_insert(insert_query_t *query) {
  * @return true if valid, false if invalid
  */
 bool check_query_delete(delete_query_t *query) {
+    table_definition_t table_definition;
+    table_definition_t *retour_definition = get_table_definition(query->table_name, &table_definition); //TODO : voir comment la fonction retourne pour savoir si on utilise retour_definition ou pas
+    
+    if (retour_definition != NULL) { //Si la table existe
+        if (check_fields_list(&query->where_clause.values, &table_definition)) { //Si les champs de where existent tous
+            if (check_value_types(&query->where_clause.values, &table_definition)) { //Si les type des valeurs de where sont bons
+                return true;
+            }
+        }
+    }
+
     return false;
 }
 
