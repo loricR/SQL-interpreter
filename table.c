@@ -262,7 +262,19 @@ unsigned long long get_next_key(char *table_name) {
  * @return a pointer to the matching field_record_t if found, NULL else
  */
 field_record_t *find_field_in_table_record(char *field_name, table_record_t *record) {
-    return NULL; // Checking the query shall avoid this
+    for (int i=0; i<record->fields_count; i++) { //Pour chaque champs
+        bool exist = true;
+        for (int j=0; j<strlen(field_name); i++) { //Pour chaque lettre
+            if (field_name[j] != record->fields[i].column_name[j]) {
+                exist = false;
+            }
+        }
+        if (exist) {
+                return &record->fields[i];
+            }
+    }
+    //Si aucun champs n'a mené à un return, on retourne NULL
+    return NULL;
 }
 
 /*!
