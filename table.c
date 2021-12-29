@@ -252,7 +252,16 @@ void update_key(char *table_name, unsigned long long value) {
  * @return the next value of the key is it exists, 0 else
  */
 unsigned long long get_next_key(char *table_name) {
-    return 0;
+    if (table_exists(table_name)) {
+        FILE *fptr = open_key_file(table_name, "r");
+        if (fptr != NULL) {
+            unsigned long long value
+            fscanf(fptr, "%llu", &value);
+            fclose(fptr);
+            return value+1;
+        }
+        return 0;
+    }
 }
 
 /*!
