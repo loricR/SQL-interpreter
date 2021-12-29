@@ -54,7 +54,7 @@ void recursive_rmdir(char *dirname) {
             }
             free(buf);
         }
+        closedir(rep);
         rmdir(dirname);
     }
-    closedir(rep);
 }
