@@ -177,6 +177,7 @@ table_definition_t *get_table_definition(char *table_name, table_definition_t *r
                 strcpy(result->definitions[result->fields_count].column_name, column_name);
                 result->fields_count += 1;
             }
+            fclose(fptr);
         }
         return result;
     }
@@ -246,11 +247,14 @@ char *format_row(char *table_name, char *buffer, table_definition_t *table_defin
 void update_key(char *table_name, unsigned long long value) {
     if (table_exists(table_name)) {
         FILE *fptr = open_key_file(table_name, "r+");
-        unsigned long long actual_key;
-        fscanf(fptr, "%llu", &actual_key);
-        if (value+1 > actual_key) {
-            rewind(fptr);
-            fprintf(fptr, "%llu", value+1);
+        if (fptr != NULL) {
+            unsigned long long actual_key;
+            fscanf(fptr, "%llu", &actual_key);
+            if (value+1 > actual_key) {
+                rewind(fptr);
+                fprintf(fptr, "%llu", value+1);
+            }
+            fclose(fptr);
         }
     }
 }
