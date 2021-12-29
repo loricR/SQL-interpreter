@@ -328,7 +328,7 @@ unsigned long long get_next_key(char *table_name) {
     if (table_exists(table_name)) {
         FILE *fptr = open_key_file(table_name, "r");
         if (fptr != NULL) {
-            unsigned long long value
+            unsigned long long value;
             fscanf(fptr, "%llu", &value);
             fclose(fptr);
             return value+1;
@@ -368,7 +368,41 @@ field_record_t *find_field_in_table_record(char *field_name, table_record_t *rec
  * @return true if the record matches the filter, false else
  */
 bool is_matching_filter(table_record_t *record, filter_t *filter) {
-    return false;
+    if (filter = NULL || filter->logic_operator == OP_ERROR) {
+        //Si NULL ou ERROR on retourne faux
+        return false;
+    }
+    else { //Sinon on test les conditions du filtre
+        bool or = false; //Variable qui vérifie la condition or
+        bool and = true; //Variable qui vérifie la condition and
+
+        for (int i=0; i<record->fields_count; i++) { //Pour chaque champs de record
+            for (int j=0; j<filter->values.fields_count; j++) { //Pour chaque champs filter
+                bool temp = true;
+                for (int x=0; x<strlen(record->fields[i].column_name); x++) { //Pour chaque lettre
+                    if (record->fields[i].column_name[x] != filter->values.fields[j].column_name[x]) {
+                        //Si les lettres sont diff -> and est faux et temp est faux (car champs différents)
+                        and = false;
+                        temp = false;
+                    }
+                }
+                if (temp) { //Si temp = true -> les champs sont égaux donc or = true
+                    or = true;
+                }
+            }
+        }
+
+        if (filter->logic_operator == OP_OR) {
+            return or;
+        }
+        else if (filter->logic_operator == OP_AND) {
+            return and;
+        }
+        else {
+            //S'il y a une erreur on retourne faux
+            return false;
+        }
+    }
 }
 
 /*!
