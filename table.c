@@ -20,7 +20,6 @@ FILE *open_definition_file(char *table_name, char *mode) {
     full_path = (char *) malloc(sizeof(char) * full_len);
     full_path = make_full_path(table_name, table_name);
     strcat(full_path,ext);
-    printf("%s", full_path);
     FILE *fptr = fopen(full_path, mode);
     free(full_path);
     if (fptr != NULL) {
@@ -42,7 +41,6 @@ FILE *open_index_file(char *table_name, char *mode) {
     full_path = (char *) malloc(sizeof(char) * full_len);
     full_path = make_full_path(table_name, table_name);
     strcat(full_path,ext);
-    printf("%s", full_path);
     FILE *fptr = fopen(full_path, mode);
     free(full_path);
     if (fptr != NULL) {
@@ -64,7 +62,6 @@ FILE *open_content_file(char *table_name, char *mode) {
     full_path = (char *) malloc(sizeof(char) * full_len);
     full_path = make_full_path(table_name, table_name);
     strcat(full_path,ext);
-    printf("%s", full_path);
     FILE *fptr = fopen(full_path, mode);
     free(full_path);
     if (fptr != NULL) {
@@ -86,7 +83,6 @@ FILE *open_key_file(char *table_name, char *mode) {
     full_path = (char *) malloc(sizeof(char) * full_len);
     full_path = make_full_path(table_name, table_name);
     strcat(full_path,ext);
-    printf("%s", full_path);
     FILE *fptr = fopen(full_path, mode);
     free(full_path);
     if (fptr != NULL) {
@@ -124,6 +120,27 @@ int table_exists(char *table_name) {
  * @param table_definition a pointer to the definition of the new table
  */
 void create_table(create_query_t *table_definition) {
+    if (!table_exists(table_definition->table_name)) {
+        mkdir(table_definition->table_name, S_IRWXU);
+        FILE *fptr;
+        fptr = open_index_file(table_definition->table_name, "w");
+        fclose(fptr);
+        fptr = open_content_file(table_definition->table_name, "w");
+        fclose(fptr);
+        fptr = open_definition_file(table_definition->table_name, "w");
+        for (int i = 0; i<table_definition->table_definition.fields_count; ++i) {
+            if (table_definition->table_definition.definitions[i].column_type != TYPE_PRIMARY_KEY) {
+                fprintf(fptr, "%d %s\n", table_definition->table_definition.definitions[i].column_type, table_definition->table_definition.definitions[i].column_name);
+            } else {
+                FILE *fptr2 = open_key_file(table_definition->table_name, "w");
+                fprintf(fptr2, "%llu", (unsigned long long)1);
+                fclose(fptr2);
+            }
+        }
+        fclose(fptr);
+    }
+
+
 }
 
 /*!
