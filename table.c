@@ -213,14 +213,22 @@ uint16_t compute_record_length(table_definition_t *definition) {
 uint32_t find_first_free_record(char *table_name) {
     uint32_t offset = 0;
     index_record_t temp;
+    int nb_bytes = 0;
     if (table_exists(table_name)) {
-        FILE *fptr = open_index_file(table_name, "r");
+        FILE *fptr = open_index_file(table_name, "r+");
         do {
         fread(temp.is_active, 1, 1, fptr);
         fread(temp.offset, 4, 1, fptr);
         fread(temp.length, 2, 1, fptr);
-        } while (temp.is_active != 0);
+        nb_bytes += 7;
+        } while (temp.is_active != 0 && !feof(fptr));
         offset = temp.offset;
+        if (temp.is_active != 0) {
+            fprintf(fptr, "%hhu%u%hu", 1, 0, 0);
+        } else {
+            fseek(fptr, nb_bytes-7, SEEK_SET);
+            fprintf(fptr, "%hhd", 1);
+        }
         fclose(fptr);
     }
     return offset;
