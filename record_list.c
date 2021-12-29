@@ -45,7 +45,38 @@ void add_record(record_list_t *record_list, table_record_t *record) {
  * @return the display length of the field
  */
 int field_record_length(field_record_t *field_record) {
-    return 0;
+    int length = 0;
+    if (field_record->field_type == TYPE_UNKNOWN) {
+        length = 0;
+    }
+    else if (field_record->field_type == TYPE_TEXT) {
+        length = strlen(field_record->field_value.text_value);
+    }
+    else if (field_record->field_type == TYPE_INTEGER) {
+        if (field_record->field_value.int_value == 0) {
+            length = 0;
+        }
+        else if (field_record->field_value.int_value > 0) {
+            float temp = field_record->field_value.int_value;
+            while (temp/10 > 1) {
+                length++;
+                temp = temp/10;
+            }
+            length++;
+        }
+        else {
+            float temp = field_record->field_value.int_value;
+            while (temp/10 < (-1)) {
+                length++;
+                temp = temp/10;
+            }
+            length++;
+        }
+    }
+    else if (field_record->field_type == TYPE_FLOAT) {
+        //Continuer ici
+    }
+    return length;
 }
 
 /*!
