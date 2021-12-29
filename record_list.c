@@ -65,7 +65,7 @@ int field_record_length(field_record_t *field_record) {
             length = 1;
         }
         else if (temp > 0) {
-            while (temp/10 > 1) {
+            while (temp/10 >= 1) {
                 length++;
                 temp = temp/10;
             }
@@ -73,7 +73,7 @@ int field_record_length(field_record_t *field_record) {
         }
         else {
             length++; //Pour le signe -
-            while (temp/10 < (-1)) {
+            while (temp/10 <= (-1)) {
                 length++;
                 temp = temp/10;
             }
