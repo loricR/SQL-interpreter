@@ -244,6 +244,9 @@ char *format_row(char *table_name, char *buffer, table_definition_t *table_defin
  * @param value the new key value
  */
 void update_key(char *table_name, unsigned long long value) {
+    if (table_exists(table_name)) {
+        FILE *fptr = open_key_file()
+    }
 }
 
 /*!
