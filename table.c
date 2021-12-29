@@ -212,6 +212,17 @@ uint16_t compute_record_length(table_definition_t *definition) {
  */
 uint32_t find_first_free_record(char *table_name) {
     uint32_t offset = 0;
+    index_record_t temp;
+    if (table_exists(table_name)) {
+        FILE *fptr = open_index_file(table_name, "r");
+        do {
+        fread(temp.is_active, 1, 1, fptr);
+        fread(temp.offset, 4, 1, fptr);
+        fread(temp.length, 2, 1, fptr);
+        } while (temp.is_active != 0);
+        offset = temp.offset;
+        fclose(fptr);
+    }
     return offset;
 }
 
