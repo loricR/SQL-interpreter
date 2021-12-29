@@ -7,6 +7,7 @@
 #include "sql.h"
 #include "table.h"
 #include "check.h"
+#include "query_exec.h"
 
 #define SQL_COMMAND_MAX_SIZE 1500
 
