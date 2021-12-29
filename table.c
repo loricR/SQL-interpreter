@@ -160,6 +160,26 @@ void drop_table(char *table_name) {
  * @return the pointer to result, NULL if the function failed
  */
 table_definition_t *get_table_definition(char *table_name, table_definition_t *result) {
+    if (table_exists(table_name)) {
+        char ext[] = ".def";
+        char *full_path;
+        size_t full_len = 2 * strlen(table_name) + 6;
+        full_path = (char *) malloc(sizeof(char) * full_len);
+        full_path = make_full_path(table_name, table_name);
+        strcat(full_path,ext);
+        FILE *fptr = open_definition_file(table_name, "r");
+        if (fptr != NULL) {
+            int type;
+            char column_name[TEXT_LENGTH];
+            result->fields_count = 0;
+            while (fscanf(fptr, "%d %s", &type, column_name) == 2) {
+                result->definitions[result->fields_count].column_type = type;
+                strcpy(result->definitions[result->fields_count].column_name, column_name);
+                result->fields_count += 1;
+            }
+        }
+        return result;
+    }
     return NULL;
 }
 
