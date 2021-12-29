@@ -46,18 +46,25 @@ void add_record(record_list_t *record_list, table_record_t *record) {
  */
 int field_record_length(field_record_t *field_record) {
     int length = 0;
-    if (field_record->field_type == TYPE_UNKNOWN) {
+    if (field_record->field_type == TYPE_UNKNOWN) { //Si type inconnu
         length = 0;
     }
-    else if (field_record->field_type == TYPE_TEXT) {
+    else if (field_record->field_type == TYPE_TEXT) { //Si type texte
         length = strlen(field_record->field_value.text_value);
     }
-    else if (field_record->field_type == TYPE_INTEGER) {
-        if (field_record->field_value.int_value == 0) {
-            length = 0;
+    else if (field_record->field_type == TYPE_INTEGER || field_record->field_type == TYPE_PRIMARY_KEY) { //Si type entier
+        float temp;
+        if (field_record->field_type == TYPE_INTEGER) {
+            temp = field_record->field_value.int_value;
         }
-        else if (field_record->field_value.int_value > 0) {
-            float temp = field_record->field_value.int_value;
+        else {
+            temp = field_record->field_value.primary_key_value;
+        }
+        
+        if (temp == 0) {
+            length = 1;
+        }
+        else if (temp > 0) {
             while (temp/10 > 1) {
                 length++;
                 temp = temp/10;
@@ -65,7 +72,7 @@ int field_record_length(field_record_t *field_record) {
             length++;
         }
         else {
-            float temp = field_record->field_value.int_value;
+            length++; //Pour le signe -
             while (temp/10 < (-1)) {
                 length++;
                 temp = temp/10;
@@ -73,8 +80,26 @@ int field_record_length(field_record_t *field_record) {
             length++;
         }
     }
-    else if (field_record->field_type == TYPE_FLOAT) {
-        //Continuer ici
+    else if (field_record->field_type == TYPE_FLOAT) { //Si type float
+        float temp;
+        if (field_record->field_value.float_value <0) {
+            length++; //Pour le signe -
+            temp = -field_record->field_value.float_value;
+        }
+        //On compte les chiffres avant la virgule :
+        while (temp/10 > 1) {
+            length++;
+            temp = temp/10;
+        }
+        length++;
+        //On compte les chiffres après la virgule :
+        if (temp != (int)temp) {
+            length++; //Pour la virgule
+        }
+        while (temp != (int)temp) {
+            length++;
+            temp = temp*10;
+        }
     }
     return length;
 }
