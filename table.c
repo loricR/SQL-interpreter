@@ -242,6 +242,9 @@ uint32_t find_first_free_record(char *table_name) {
  * @param record the record to add
  */
 void add_row_to_table(char *table_name, table_record_t *record) {
+    if (table_exists(table_name)) {
+
+    }
 }
 
 /*!
