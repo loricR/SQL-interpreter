@@ -228,20 +228,22 @@ uint32_t find_first_free_record(char *table_name) {
     int nb_bytes = 0;
     if (table_exists(table_name)) {
         FILE *fptr = open_index_file(table_name, "r+");
-        do {
-        fread(temp.is_active, 1, 1, fptr);
-        fread(temp.offset, 4, 1, fptr);
-        fread(temp.length, 2, 1, fptr);
-        nb_bytes += 7;
-        } while (temp.is_active != 0 && !feof(fptr));
-        offset = temp.offset;
-        if (temp.is_active != 0) {
-            fprintf(fptr, "%hhu%u%hu", 1, 0, 0);
-        } else {
-            fseek(fptr, nb_bytes-7, SEEK_SET);
-            fprintf(fptr, "%hhd", 1);
+        if (fptr != NULL) {
+            do {
+            fread(temp.is_active, 1, 1, fptr);
+            fread(temp.offset, 4, 1, fptr);
+            fread(temp.length, 2, 1, fptr);
+            nb_bytes += 7;
+            } while (temp.is_active != 0 && !feof(fptr));
+            offset = temp.offset;
+            if (temp.is_active != 0) {
+                fprintf(fptr, "%hhu%u%hu\n", 1, 0, 0);
+            } else {
+                fseek(fptr, nb_bytes-7, SEEK_SET);
+                fprintf(fptr, "%hhu", 1);
+            }
+            fclose(fptr);
         }
-        fclose(fptr);
     }
     return offset;
 }
@@ -253,6 +255,34 @@ uint32_t find_first_free_record(char *table_name) {
  * @param record the record to add
  */
 void add_row_to_table(char *table_name, table_record_t *record) {
+    if (table_exists(table_name)) {
+        table_definition_t *table_def;
+        table_def = get_table_definition(table_name, table_def);
+        if (table_def != NULL) {
+            uint16_t record_length = compute_record_length(table_def);
+            char *record_buf;
+            record_buf = (char *) malloc(record_length);
+            record_buf = format_row(table_name, record_buf, table_def, record);
+            uint32_t ffrecord = find_first_free_record(table_name);
+            FILE *fptr_data = open_content_file(table_name, "a");
+            if (fptr_data != NULL) {
+                if (ffrecord != 0) {
+                    fseek(fptr_data, ffrecord, SEEK_SET);
+                    fprintf(fptr_data, "%s\n", record_buf);
+                } else {
+                    long offset = ftell(fptr_data);
+                    fprintf(fptr_data, "%s\n", record_buf);
+                    FILE *fptr_idx = open_index_file(table_name, "r+");
+                    if (fptr_idx != NULL) {
+                        fseek(fptr_idx, 6, SEEK_END);
+                        fprintf(fptr_data, "%u%hu", offset, record_length);
+                        fclose(fptr_idx);
+                    }
+                }
+                fclose(fptr_data);
+            }
+        }
+    }
 }
 
 /*!
