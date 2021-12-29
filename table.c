@@ -193,12 +193,23 @@ table_definition_t *get_table_definition(char *table_name, table_definition_t *r
  */
 uint16_t compute_record_length(table_definition_t *definition) {
     uint16_t length = 0;
-    // Add the in-memory length of field_count
-    length += sizeof(int);
-    // Add the in-memory length of definitions array
     for (int i = 0; i<definition->fields_count; ++i) {
-        length += TEXT_LENGTH;
-        length += sizeof(int);
+        switch (definition->definitions[i].column_type) {
+            case TYPE_PRIMARY_KEY:
+                length += sizeof(unsigned long long);
+                break;
+            case TYPE_INTEGER:
+                length += sizeof(long long);
+                break;
+            case TYPE_FLOAT:
+                length += sizeof(double);
+                break;
+            case TYPE_TEXT:
+                length += TEXT_LENGTH;
+                break;
+            default:
+                break;
+        }
     }
     return length;
 }
