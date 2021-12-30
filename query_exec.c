@@ -57,7 +57,9 @@ void execute_delete(delete_query_t *query) {
 }
 
 void execute_drop_table(char *table_name) {
+    recursive_rmdir(table_name);
 }
 
 void execute_drop_database(char *db_name) {
+    recursive_rmdir(db_name);
 }
