@@ -42,7 +42,7 @@ void execute_create(create_query_t *query) {
     if (!directory_exists("db")) {
         create_db_directory("db");
     }
-    create_table(&query->table_definition);
+    create_table(query);
 }
 
 void execute_insert(insert_query_t *query) {

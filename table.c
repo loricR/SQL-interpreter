@@ -120,20 +120,21 @@ int table_exists(char *table_name) {
  * @param table_definition a pointer to the definition of the new table
  */
 void create_table(create_query_t *table_definition) {
+    printf("Chemin: %s\n", table_definition->table_name);
     if (!table_exists(table_definition->table_name)) {
         mkdir(table_definition->table_name, S_IRWXU);
         FILE *fptr;
-        fptr = open_index_file(table_definition->table_name, "w");
+        fptr = open_index_file(table_definition->table_name, "wb");
         fclose(fptr);
-        fptr = open_content_file(table_definition->table_name, "w");
+        fptr = open_content_file(table_definition->table_name, "wb");
         fclose(fptr);
         fptr = open_definition_file(table_definition->table_name, "w");
-        for (int i = 0; i<table_definition->table_definition.fields_count; ++i) {
-            if (table_definition->table_definition.definitions[i].column_type != TYPE_PRIMARY_KEY) {
-                fprintf(fptr, "%d %s\n", table_definition->table_definition.definitions[i].column_type, table_definition->table_definition.definitions[i].column_name);
-            } else {
-                FILE *fptr2 = open_key_file(table_definition->table_name, "w");
-                fprintf(fptr2, "%llu", (unsigned long long)1);
+        for (int i = 0; i<table_definition->table_definition.fields_count; i++) {
+            fprintf(fptr, "%d %s\n", table_definition->table_definition.definitions[i].column_type, table_definition->table_definition.definitions[i].column_name);
+            if (table_definition->table_definition.definitions[i].column_type == TYPE_PRIMARY_KEY) {
+                FILE *fptr2 = open_key_file(table_definition->table_name, "wb");
+                unsigned long long index = 1;
+                fwrite(&index, sizeof(index), 1, fptr2);
                 fclose(fptr2);
             }
         }
