@@ -109,7 +109,7 @@ bool check_query_create(create_query_t *query) {
     if (!table_exists(query->table_name)) { //Si la table n'existe pas
         return true;
     }
-
+    printf("La table %s existe déjà\n", query->table_name);
     return false;
 }
 

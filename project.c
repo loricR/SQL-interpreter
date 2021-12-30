@@ -147,12 +147,13 @@ int main(int argc, char *argv[]) {
             printf("where : %s - %s\n", resultat.query_content.delete_query.where_clause.values.fields[i].column_name, resultat.query_content.delete_query.where_clause.values.fields[i].field_value.text_value);
         }*/
 
-        query_result_t resultat;
+        /*query_result_t resultat;
         if (parse(buffer, &resultat) == NULL) {printf("retourne null\n");}
-        printf("table : %s\n", resultat.query_content.table_name);
+        printf("table : %s\n", resultat.query_content.table_name);*/
 
     } else {
         printf("Mode normal : \n");
+        getchar();
         do {
             printf("> ");
             fflush(stdin);
@@ -162,6 +163,32 @@ int main(int argc, char *argv[]) {
             if (strcmp(buffer, "exit") == 0)
                 break;
             // Here: parse SQL, check query, execute query
+            query_result_t query;
+            query_result_t *query_result;
+            query_result = parse(buffer, &query);
+            if (query_result != NULL) {
+                printf("On a parse\n");
+                if (!check_query(&query)) {
+                    printf("La requete n'est pas conforme\n");
+                } else {
+                    execute(&query);
+                }
+
+                printf("On parse ok\n");
+            }
+            else {
+                printf("Probleme construction de la requete : %s\n", buffer);
+            }
+
+
+            // TEST CREATE
+            printf("Type  : %d\n", query.query_type);
+            printf("Table : %s\n", query.query_content.create_query.table_name);
+            for (int i=0; i<query.query_content.create_query.table_definition.fields_count; i++) {
+                printf("Champ : %s\n", query.query_content.create_query.table_definition.definitions[i].column_name);
+            }
+            //for (int i=0; query.query_type )
+
         } while (true);
     }
 
