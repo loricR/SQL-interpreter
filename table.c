@@ -262,19 +262,20 @@ uint32_t find_first_free_record(char *table_name) {
  */
 void add_row_to_table(char *table_name, table_record_t *record) {
     FILE *index = open_index_file(table_name, "rb+"); //ouverture en lecture/écriture sans écraser le contenu
+    FILE *data = open_content_file(table_name, "rb+");
+    if ((index == NULL) || (data == NULL)) {
+        printf("Problème d'accès aux fichiers de la table %s\n", table_name);
+        return;
+    }
     
     table_definition_t *definition;
     definition = get_table_definition(table_name, definition); //On récupère la définition de la table
-
     index_record_t buffer;
     uint32_t offset_index = find_first_free_record(table_name);
 
     fseek(index, offset_index, SEEK_SET); //On se place où on a trouvé le active à 0
     fread(&buffer, sizeof(buffer), 1, index);
-
-    FILE *data = open_content_file(table_name, "rb+");
-    FILE *key = open_key_file(table_name, "rb+");
-
+    
     if (buffer.record_offset == 0) { //Si on a pas trouvé de active à 0 (donc début ou fin de fichier index)
         fseek(data, 0, SEEK_END); 
         buffer.record_offset = ftell(data); //On récupère l'offset à la fin du fichier data
@@ -283,33 +284,21 @@ void add_row_to_table(char *table_name, table_record_t *record) {
         fwrite(&buffer, sizeof(buffer), 1, index);
     }
     
+    char donnees[MAX_FIELDS_COUNT*TEXT_LENGTH]; //Pour réserver la mémoire sans faire de malloc
+    char *donnees_retour;
+    donnees_retour = format_row(table_name, donnees, definition, record);
     fseek(data, buffer.record_offset, SEEK_SET); //On se positionne à l'offset défini dans index
-    
+    fwrite(donnees_retour, sizeof(donnees_retour), 1, data);
+
     for (int i=0; i<record->fields_count; i++) {
-        switch (record->fields[i].field_type) {
-        case TYPE_INTEGER:
-            fwrite(&record->fields[i].field_value.int_value, sizeof(long long), 1, data);
-            break;
-        case TYPE_FLOAT:
-            fwrite(&record->fields[i].field_value.float_value, sizeof(double), 1, data);
-            break;
-        case TYPE_TEXT:
-            fwrite(record->fields[i].field_value.text_value, TEXT_LENGTH, 1, data);
-            break;
-        case TYPE_PRIMARY_KEY:
-            fseek(key, 0, SEEK_END); //On se positionne à la fin du fichier key
-            fwrite(&record->fields[i].field_value.primary_key_value, sizeof(unsigned long long), 1, data);
-            fwrite(&record->fields[i].field_value.primary_key_value, sizeof(unsigned long long), 1, key);
-            break;
-        default:
-            break;
-        }  
+        if (record->fields[i].field_type == TYPE_PRIMARY_KEY) {
+            update_key(table_name, record->fields[i].field_value.primary_key_value); //La valeur est mise à jour si la valeur de la clé est supérieur à celle enregistrée
+        }
     }
+
     fclose(data);
     fclose(index);
-    if (key != NULL) {
-        fclose(key);
-    }
+    
 }
 
 /*!
@@ -321,6 +310,36 @@ void add_row_to_table(char *table_name, table_record_t *record) {
  * @return a pointer to buffer in case of success, NULL else.
  */
 char *format_row(char *table_name, char *buffer, table_definition_t *table_definition, table_record_t *record) {
+    int longueur = 0;
+
+    for (int i=0; i<table_definition->fields_count; i++) {
+        for (int j=0; j<record->fields_count; j++) {
+            if (strcmp(record->fields[j].column_name, table_definition->definitions[i].column_name) == 0) {
+                switch (record->fields[j].field_type) {
+                case TYPE_INTEGER:
+                    memcpy(buffer + longueur, &record->fields[j].field_value.int_value, sizeof(long long));
+                    longueur += sizeof(long long);
+                    break;
+                case TYPE_FLOAT:
+                    memcpy(buffer + longueur, &record->fields[j].field_value.float_value, sizeof(double));
+                    longueur += sizeof(double);
+                    break;
+                case TYPE_TEXT:
+                    memcpy(buffer + longueur, record->fields[j].field_value.text_value, TEXT_LENGTH);
+                    longueur += TEXT_LENGTH;
+                    break;
+                case TYPE_PRIMARY_KEY:
+                    memcpy(buffer + longueur, &record->fields[j].field_value.primary_key_value, sizeof(unsigned long long));
+                    longueur += sizeof(unsigned long long);
+                    break;
+                default:
+                    buffer = NULL;
+                    break;
+                }  
+                break; //On a traité la ligne, on continue
+            }
+        }
+    }
     return buffer;
 }
 
@@ -381,8 +400,8 @@ field_record_t *find_field_in_table_record(char *field_name, table_record_t *rec
             exist = false;
         }
         if (exist) {
-                return &record->fields[i];
-            }
+            return &record->fields[i];
+        }
     }
     //Si aucun champs n'a mené à un return, on retourne NULL
     return NULL;
@@ -400,8 +419,7 @@ bool is_matching_filter(table_record_t *record, filter_t *filter) {
     if (filter == NULL || filter->logic_operator == OP_ERROR) {
         //Si NULL ou ERROR on retourne faux
         return false;
-    }
-    else { //Sinon on test les conditions du filtre
+    } else { //Sinon on test les conditions du filtre
         bool or = false; //Variable qui vérifie la condition or
         bool and = true; //Variable qui vérifie la condition and
 
