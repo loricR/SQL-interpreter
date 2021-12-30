@@ -377,10 +377,8 @@ unsigned long long get_next_key(char *table_name) {
 field_record_t *find_field_in_table_record(char *field_name, table_record_t *record) {
     for (int i=0; i<record->fields_count; i++) { //Pour chaque champs
         bool exist = true;
-        for (int j=0; j<strlen(field_name); i++) { //Pour chaque lettre
-            if (strcmp(field_name, record->fields[i].column_name) != 0) {
-                exist = false;
-            }
+        if (strcmp(field_name, record->fields[i].column_name) != 0) {
+            exist = false;
         }
         if (exist) {
                 return &record->fields[i];
