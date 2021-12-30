@@ -223,27 +223,33 @@ uint16_t compute_record_length(table_definition_t *definition) {
  * @return the offset of the free index in the index file.
  */
 uint32_t find_first_free_record(char *table_name) {
+    FILE *index = open_index_file(table_name, "rb+"); //ouverture en lecture sans écraser le contenu
+    
+    uint8_t active = 1;
     uint32_t offset = 0;
-    index_record_t temp;
-    int nb_bytes = 0;
-    if (table_exists(table_name)) {
-        FILE *fptr = open_index_file(table_name, "r+");
-        if (fptr != NULL) {
-            do {
-            fread(temp.is_active, 1, 1, fptr);
-            fread(temp.offset, 4, 1, fptr);
-            fread(temp.length, 2, 1, fptr);
-            nb_bytes += 7;
-            } while (temp.is_active != 0 && !feof(fptr));
-            offset = temp.offset;
-            if (temp.is_active != 0) {
-                fprintf(fptr, "%hhu%u%hu\n", 1, 0, 0);
-            } else {
-                fseek(fptr, nb_bytes-7, SEEK_SET);
-                fprintf(fptr, "%hhu", 1);
-            }
-            fclose(fptr);
+
+    index_record_t buffer;
+    buffer.is_active = active; //Active = 1
+
+    if (index != NULL) {
+        do {
+            fread(&buffer, sizeof(buffer), 1, index); //Si le fichier est vide ou qu'on est à la fin du fichier le buffer n'est pas modifié
+            active = buffer.is_active;
+        } while ((!feof(index)) && (active != 0));
+
+        if (feof(index) != 0) {
+            buffer.is_active = 1;
+            buffer.record_length = 0;
+            buffer.record_offset = 0;
+            fwrite(&buffer, sizeof(buffer), 1, index);
+        } else if (active == 0) {
+            buffer.is_active = 1; //Active = 1
+            fseek(index, -7, SEEK_CUR); //On se décale de 7 octets avant
+            fwrite(&buffer, sizeof(buffer), 1, index);
         }
+        fseek(index, -7, SEEK_CUR);
+        offset = ftell(index);
+        fclose(index);
     }
     return offset;
 }
@@ -255,33 +261,54 @@ uint32_t find_first_free_record(char *table_name) {
  * @param record the record to add
  */
 void add_row_to_table(char *table_name, table_record_t *record) {
-    if (table_exists(table_name)) {
-        table_definition_t *table_def;
-        table_def = get_table_definition(table_name, table_def);
-        if (table_def != NULL) {
-            uint16_t record_length = compute_record_length(table_def);
-            char *record_buf;
-            record_buf = (char *) malloc(record_length);
-            record_buf = format_row(table_name, record_buf, table_def, record);
-            uint32_t ffrecord = find_first_free_record(table_name);
-            FILE *fptr_data = open_content_file(table_name, "a");
-            if (fptr_data != NULL) {
-                if (ffrecord != 0) {
-                    fseek(fptr_data, ffrecord, SEEK_SET);
-                    fprintf(fptr_data, "%s\n", record_buf);
-                } else {
-                    long offset = ftell(fptr_data);
-                    fprintf(fptr_data, "%s\n", record_buf);
-                    FILE *fptr_idx = open_index_file(table_name, "r+");
-                    if (fptr_idx != NULL) {
-                        fseek(fptr_idx, 6, SEEK_END);
-                        fprintf(fptr_data, "%u%hu", offset, record_length);
-                        fclose(fptr_idx);
-                    }
-                }
-                fclose(fptr_data);
-            }
-        }
+    FILE *index = open_index_file(table_name, "rb+"); //ouverture en lecture/écriture sans écraser le contenu
+    
+    table_definition_t *definition;
+    definition = get_table_definition(table_name, definition); //On récupère la définition de la table
+
+    index_record_t buffer;
+    uint32_t offset_index = find_first_free_record(table_name);
+
+    fseek(index, offset_index, SEEK_SET); //On se place où on a trouvé le active à 0
+    fread(&buffer, sizeof(buffer), 1, index);
+
+    FILE *data = open_content_file(table_name, "rb+");
+    FILE *key = open_key_file(table_name, "rb+");
+
+    if (buffer.record_offset == 0) { //Si on a pas trouvé de active à 0 (donc début ou fin de fichier index)
+        fseek(data, 0, SEEK_END); 
+        buffer.record_offset = ftell(data); //On récupère l'offset à la fin du fichier data
+        buffer.record_length = compute_record_length(definition); //On récupère la somme des longueurs des champs
+        fseek(index, offset_index, SEEK_SET); //On se place où on a trouvé le active à 0
+        fwrite(&buffer, sizeof(buffer), 1, index);
+    }
+    
+    fseek(data, buffer.record_offset, SEEK_SET); //On se positionne à l'offset défini dans index
+    
+    for (int i=0; i<record->fields_count; i++) {
+        switch (record->fields[i].field_type) {
+        case TYPE_INTEGER:
+            fwrite(&record->fields[i].field_value.int_value, sizeof(long long), 1, data);
+            break;
+        case TYPE_FLOAT:
+            fwrite(&record->fields[i].field_value.float_value, sizeof(double), 1, data);
+            break;
+        case TYPE_TEXT:
+            fwrite(record->fields[i].field_value.text_value, TEXT_LENGTH, 1, data);
+            break;
+        case TYPE_PRIMARY_KEY:
+            fseek(key, 0, SEEK_END); //On se positionne à la fin du fichier key
+            fwrite(&record->fields[i].field_value.primary_key_value, sizeof(unsigned long long), 1, data);
+            fwrite(&record->fields[i].field_value.primary_key_value, sizeof(unsigned long long), 1, key);
+            break;
+        default:
+            break;
+        }  
+    }
+    fclose(data);
+    fclose(index);
+    if (key != NULL) {
+        fclose(key);
     }
 }
 
