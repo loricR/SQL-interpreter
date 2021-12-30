@@ -481,9 +481,9 @@ table_record_t *get_table_record(char *table_name, uint32_t offset, table_defini
             fseek(fptr_content, offset, SEEK_SET);
             result->fields_count = def->fields_count;
             // Pour chaque champ :
-            for (int i=0; i<def->fields_count; ++i) {
+            for (int i=0; i<def->fields_count; i++) {
                 // Valeur lue est assignée au champ correspondant
-                switch (def->fields[i].field_type) {
+                switch (def->definitions[i].column_type) {
                     case TYPE_INTEGER:
                         fread(&result->fields[i].field_value.int_value, sizeof(long long), 1, fptr_content);
                         break;
@@ -491,7 +491,7 @@ table_record_t *get_table_record(char *table_name, uint32_t offset, table_defini
                         fread(&result->fields[i].field_value.float_value, sizeof(double), 1, fptr_content);
                         break;
                     case TYPE_TEXT:
-                        fread(&result->fields[i].field_value.text_value, TEXT_LENGTH, 1, fptr_content);
+                        fread(result->fields[i].field_value.text_value, TEXT_LENGTH, 1, fptr_content);
                         break;
                     case TYPE_PRIMARY_KEY:
                         fread(&result->fields[i].field_value.primary_key_value, sizeof(unsigned long long), 1, fptr_content);
