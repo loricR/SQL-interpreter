@@ -378,7 +378,7 @@ field_record_t *find_field_in_table_record(char *field_name, table_record_t *rec
     for (int i=0; i<record->fields_count; i++) { //Pour chaque champs
         bool exist = true;
         for (int j=0; j<strlen(field_name); i++) { //Pour chaque lettre
-            if (field_name[j] != record->fields[i].column_name[j]) {
+            if (strcmp(field_name, record->fields[i].column_name) != 0) {
                 exist = false;
             }
         }
