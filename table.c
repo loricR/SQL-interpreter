@@ -333,13 +333,16 @@ char *format_row(char *table_name, char *buffer, table_definition_t *table_defin
  */
 void update_key(char *table_name, unsigned long long value) {
     if (table_exists(table_name)) {
-        FILE *fptr = open_key_file(table_name, "r+");
+        FILE *fptr = open_key_file(table_name, "rb+");
         if (fptr != NULL) {
             unsigned long long actual_key;
-            fscanf(fptr, "%llu", &actual_key);
+            //fscanf(fptr, "%llu", &actual_key);
+            fread(&actual_key, sizeof(unsigned long long), 1, fptr);
             if (value+1 > actual_key) {
+                value += 1;
                 rewind(fptr);
-                fprintf(fptr, "%llu", value+1);
+                //fprintf(fptr, "%llu", value+1);
+                fwrite(&value, sizeof(unsigned long long), 1, fptr);
             }
             fclose(fptr);
         }
@@ -353,15 +356,16 @@ void update_key(char *table_name, unsigned long long value) {
  */
 unsigned long long get_next_key(char *table_name) {
     if (table_exists(table_name)) {
-        FILE *fptr = open_key_file(table_name, "r");
+        FILE *fptr = open_key_file(table_name, "rb");
         if (fptr != NULL) {
             unsigned long long value;
-            fscanf(fptr, "%llu", &value);
+            //fscanf(fptr, "%llu", &value);
+            fread(&value, sizeof(unsigned long long), 1, fptr);
             fclose(fptr);
             return value+1;
         }
-        return 0;
     }
+    return 0;
 }
 
 /*!
@@ -395,7 +399,7 @@ field_record_t *find_field_in_table_record(char *field_name, table_record_t *rec
  * @return true if the record matches the filter, false else
  */
 bool is_matching_filter(table_record_t *record, filter_t *filter) {
-    if (filter = NULL || filter->logic_operator == OP_ERROR) {
+    if (filter == NULL || filter->logic_operator == OP_ERROR) {
         //Si NULL ou ERROR on retourne faux
         return false;
     }
