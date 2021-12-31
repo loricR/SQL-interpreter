@@ -15,15 +15,16 @@ void expand(query_result_t *query) {
 
 void expand_select(update_or_select_query_t *query) {
     bool etoile = false;
-    table_definition_t *table_definition;
+    table_definition_t table_definition;
+    table_definition_t *retour_definition;
 
     for (int i=0; i<query->set_clause.fields_count; i++) {
         if (strcmp(query->set_clause.fields[i].column_name, "*") == 0) { //Si le champ est une étoile
             etoile = true;
-            table_definition = get_table_definition(&query->table_name, &table_definition);
-            query->set_clause.fields_count = table_definition->fields_count;
-            for (int j=0; j<table_definition->fields_count; j++) {
-                strcpy(query->set_clause.fields[j].column_name, table_definition->definitions[j].column_name); //On rempli les champs par tous les champs de la table
+            retour_definition = get_table_definition(&query->table_name, &table_definition);
+            query->set_clause.fields_count = table_definition.fields_count;
+            for (int j=0; j<table_definition.fields_count; j++) {
+                strcpy(query->set_clause.fields[j].column_name, table_definition.definitions[j].column_name); //On rempli les champs par tous les champs de la table
             }
             break;
         }

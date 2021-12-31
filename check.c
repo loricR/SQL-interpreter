@@ -62,10 +62,19 @@ bool check_query_select(update_or_select_query_t *query) {
     table_definition_t *retour_definition = get_table_definition(query->table_name, &table_definition); //TODO : voir comment la fonction retourne pour savoir si on utilise retour_definition ou pas
 
     if (retour_definition != NULL) { //Si la table existe
-        if (check_fields_list(&query->set_clause, &table_definition)) { //Si les champs de la liste de champs existent tous
-            if (check_fields_list(&query->where_clause.values, &table_definition)) { //Si les champs de la liste de champs dans le where existent tous
-                if (check_value_types(&query->where_clause.values, &table_definition)) { //Si les types dans le where sont correctes
-                    return true;
+        if (((query->set_clause.fields_count == 1) && (strcmp(query->set_clause.fields[0].column_name, "*") == 0)) || 
+            check_fields_list(&query->set_clause, &table_definition)) { //Si les champs de la liste de champs existent tous
+            if (query->where_clause.values.fields_count == 0) {
+                return true; //S'il n'y a pas de clause where
+            } else {
+                if (query->where_clause.logic_operator != OP_ERROR) {
+                    if (check_fields_list(&query->where_clause.values, &table_definition)) { //Si les champs de la liste de champs dans le where existent tous
+                        if (check_value_types(&query->where_clause.values, &table_definition)) { //Si les types dans le where sont correctes
+                            return true;
+                        }
+                    }
+                } else {
+                    printf("L'opération effectuée dans la clause WHERE n'est pas conforme\n");
                 }
             }
         }
@@ -200,10 +209,10 @@ bool check_query_drop_db(char *db_name) {
  * @return true if all fields belong to table, false else
  */
 bool check_fields_list(table_record_t *fields_list, table_definition_t *table_definition) {
-    bool response = true;
+    bool response = false;
     for (int i=0; i<fields_list->fields_count; i++) {
-        if (find_field_definition(&fields_list->fields[i].column_name, table_definition) == NULL) {
-            response = false;
+        if (find_field_definition(&fields_list->fields[i].column_name, table_definition) != NULL) {
+            response = true;
         }
     }
     return response;
