@@ -543,7 +543,7 @@ record_list_t *get_filtered_records(char *table_name, table_record_t *required_f
                             }
                         }
                     }
-                    if (((filter->logic_operator == OP_OR) && trouve_OR) || ((filter->logic_operator == OP_AND) && trouve_AND)) {
+                    if ((filter->values.fields_count == 0) || ((filter->logic_operator == OP_OR) && trouve_OR) || ((filter->logic_operator == OP_AND) && trouve_AND)) {
                         record_afficher.fields_count = 0;
                         for (int i=0; i<required_fields->fields_count; i++) {
                             for (int j=0; j<record_lu.fields_count; j++) { //on enregistre le record pour l'envoye dans un record_list
