@@ -478,7 +478,7 @@ record_list_t *get_filtered_records(char *table_name, table_record_t *required_f
         }
 
         uint16_t longueur = compute_record_length(table_name);
-        char *buffer = malloc(longueur);
+        char *buffer = malloc(longueur*sizeof(char));
         index_record_t index_record;
         table_definition_t table_defintion;
         table_record_t record_lu;
@@ -490,9 +490,8 @@ record_list_t *get_filtered_records(char *table_name, table_record_t *required_f
             fclose(index);
             return NULL;
         }
-
-        while (!feof(index)) {
-            fread(&index_record, sizeof(index_record), 1, index);
+        fseek(index, 0, SEEK_SET);
+        while(fread(&index_record, sizeof(index_record), 1, index)) {    
             if (index_record.is_active) {
                 if (get_table_record(table_name, index_record.record_offset, &table_defintion, &record_lu) != NULL) {
                     trouve_OR = false;
@@ -599,6 +598,8 @@ table_record_t *get_table_record(char *table_name, uint32_t offset, table_defini
             result->fields_count = def->fields_count;
             // Pour chaque champ :
             for (int i=0; i<def->fields_count; i++) {
+                strcpy(result->fields[i].column_name, def->definitions[i].column_name);
+                result->fields[i].field_type = def->definitions[i].column_type;
                 // Valeur lue est assignée au champ correspondant
                 switch (def->definitions[i].column_type) {
                     case TYPE_INTEGER:
