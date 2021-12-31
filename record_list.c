@@ -127,225 +127,31 @@ int field_record_length(field_record_t *field_record) {
   +----+-------+
  */
 void display_table_record_list(record_list_t *record_list) {
-    //record_list_node_t *tmp = record_list->head;
-    // Affichage du result header
-    do {
-        //tmp = record_list->head;
-        int size = field_record_length(record_list->head->record.fields);
-        
+    if (record_list->head != NULL) { //si le dernier pointeur est nul c'est qu'il n'y a pas de données
+        record_list_node_t *suivant = record_list->head;
 
-        //Affichage : 
-        printf("+");
-
-        for (int i=0; i<(size+2); i++) {
-            printf("-");
-        }
-        //record_list->head = record_list->head->next;
-        //free(tmp);
-        //tmp = record_list->head;
-        
-    } while (record_list != NULL);
-    //free(tmp);
-    printf('+\n'); //+ de fin de passage de ligne
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-    /*// Affichage des noms de colonnes 
-    do {
-        tmp = record_list->head;
-        char *name;
-
-        int size;
-        char *buffer = (char *) malloc(sizeof(char) * TEXT_LENGTH); 
-
-        // Calcul de la taille maximale
-        size = strlen(get_field_name(tmp->record, buffer));
-        if (strlen(lltoa(tmp->record.fields->field_value.int_value, buffer, 10)) > size) {
-            size = strlen(lltoa(tmp->record.fields->field_value.int_value, buffer, 10)); // lltoa convertit un long long en chaîne de caractère
-        } else if (strlen(tmp->record.fields->field_value.text_value) > size) {
-            size = strlen(tmp->record.fields->field_value.text_value);
-        } else if (strlen(ulltoa(tmp->record.fields->field_value.primary_key_value, buffer, 10)) > size) {
-            size = strlen(ulltoa(tmp->record.fields->field_value.primary_key_value, buffer, 10)); // ulltoa convertit un unsigned long long en chaîne de caractère
-        } else if (strlen(sprintf(buffer, "%lf", tmp->record.fields->field_value.float_value)) > size) {
-            size = strlen(sprintf(buffer, "%lf", tmp->record.fields->field_value.float_value)); // Convertit un double en chaîne de caractère
-        }
-        free(buffer);
-
-        // Mise a jour du nom en fonction de la taille
-        if (size > field_record_length(size)) {
-            char *buffer = (char *)mallc(sizeof(char)* size);
-            buffer = "";
-            do {
-                strcat(buffer, " ");
-                size--;
-
-            } while (size-field_record_length(record_list) != 0);
-            strcat(buffer, get_field_name(tmp->record, name));
-            name = buffer; 
-            free (buffer);
-        }
-
-        printf("| ");
-        printf("%s ", name);
-
-        record_list->head = tmp->next;
-        free(tmp);
-        tmp = record_list->head;
-Type lu: 4, champ lu: prenom
-    } while (record_list != NULL);
-    printf(" |"); // Barre de fin et passage de ligne
-
-
-    // On re-affiche le result header
-    do {
-        tmp = record_list->head;
-        int size;
-        char *buffer = (char *) malloc(sizeof(char) *
-Type lu: 4, champ lu: prenom TEXT_LENGTH);
- 
-        // Calcul de la taille maximale
-        size = strlen(get_field_name(tmp->record, buffer));
-        if (strlen(lltoa(tmp->record.fields->field_value.int_value, buffer, 10)) > size) {
-            size = strlen(lltoa(tmp->record.fields->field_value.int_value, buffer, 10)); // lltoa convertit un long long en chaîne de caractère
-        } else if (strlen(tmp->record.fields->field_value.text_value) > size) {
-            size = strlen(tmp->record.fields->field_value.text_value);
-        } else if (strlen(ulltoa(tmp->record.fields->field_value.primary_key_value, buffer, 10)) > size) {
-            size = strlen(ulltoa(tmp->record.fields->field_value.primary_key_value, buffer, 10)); // ulltoa convertit un unsigned long long en chaîne de caractère
-        } else if (strlen(sprintf(buffer, "%lf", tmp->record.fields->field_value.float_value)) > size) {
-            size = strlen(sprintf(buffer, "%lf", tmp->record.fields->field_value.float_value)); // Convertit un double en chaîne de caractère
-        }
-        free(buffer);
-
-        // Affichage : 
-        printf("+");
-
-        for (int i=0; i<size+2; i++) {
-            printf("-");
-        }
-        record_list->head = tmp->next;
-        free(tmp);
-        tmp = record_list->head;
-    } while (record_list != NULL);
-    free(tmp);
-    printf('+\n'); //+ de fin de passage de ligne
-
-
-    // Affichage des valeurs 
-    do {
-        tmp = record_list->head;
-        int size;
-        char *buffer = (char *) malloc(sizeof(char) * TEXT_LENGTH);
-
-        // Calcul de la taille maximale
-        size = strlen(get_field_name(tmp->record, buffer));
-        if (strlen(lltoa(tmp->record.fields->field_value.int_value, buffer, 10)) > size) {
-            size = strlen(lltoa(tmp->record.fields->field_value.int_value, buffer, 10)); // lltoa convertit un long long en chaîne de caractère
-        } else if (strlen(tmp->record.fields->field_value.text_value) > size) {
-            size = strlen(tmp->record.fields->field_value.text_value);
-        } else if (strlen(ulltoa(tmp->record.fields->field_value.primary_key_value, buffer, 10)) > size) {
-            size = strlen(ulltoa(tmp->record.fields->field_value.primary_key_value, buffer, 10)); // ulltoa convertit un unsigned long long en chaîne de caractère
-        } else if (strlen(sprintf(buffer, "%lf", tmp->record.fields->field_value.float_value)) > size) {
-            size = strlen(sprintf(buffer, "%lf", tmp->record.fields->field_value.float_value)); // Convertit un double en chaîne de caractère
-        }
-        free(buffer);
-
-        record_list_node_t *temp = record_list->head;
-        int chaine_size = 0;
-        for (temp; record_list != NULL; record_list->head = temp->next) {
-            chaine_size++;
-        }
-        free(temp);
-
-        chaine_size = TEXT_LENGTH*chaine_size + chaine_size*2 + (chaine_size-2)*3; // On obtient l'affichage d'une ligne contenant le nombre maximum de carcatère possible
-        char *chaine = (char *) malloc(sizeof(char)* chaine_size);
-        char *name = (char *) malloc(sizeof(char)* TEXT_LENGTH);
-        chaine ="| ";
-        char space = " | "; // Espace entre les valeurs d'une même ligne
-
-
-        do {
-            tmp = record_list->head;
-            int size;
-            char *buffer = (char *) malloc(sizeof(char) * TEXT_LENGTH);
-
-            // Calcul de la taille maximale
-            size = strlen(get_field_name(tmp->record, buffer));
-            if (strlen(lltoa(tmp->record.fields->field_value.int_value, buffer, 10)) > size) {
-                size = strlen(lltoa(tmp->record.fields->field_value.int_value, buffer, 10)); // lltoa convertit un long long en chaîne de caractère
-            } else if (strlen(tmp->record.fields->field_value.text_value) > size) {
-                size = strlen(tmp->record.fields->field_value.text_value);
-            } else if (strlen(ulltoa(tmp->record.fields->field_value.primary_key_value, buffer, 10)) > size) {
-                size = strlen(ulltoa(tmp->record.fields->field_value.primary_key_value, buffer, 10)); // ulltoa convertit un unsigned long long en chaîne de caractère
-            } else if (strlen(sprintf(buffer, "%lf", tmp->record.fields->field_value.float_value)) > size) {
-                size = strlen(sprintf(buffer, "%lf", tmp->record.fields->field_value.float_value)); // Convertit un double en chaîne de caractère
+        while (suivant != NULL) {
+            for (int i=0; i< suivant->record.fields_count; i++) {
+                switch (suivant->record.fields[i].field_type)
+                {
+                case TYPE_INTEGER:
+                    printf("|%lld", suivant->record.fields[i].field_value.int_value);
+                    break;
+                case TYPE_FLOAT:
+                    printf("|%f", suivant->record.fields[i].field_value.float_value);
+                    break;
+                case TYPE_PRIMARY_KEY:
+                    printf("|%lld", suivant->record.fields[i].field_value.primary_key_value);
+                    break;
+                case TYPE_TEXT:
+                    printf("|%s", suivant->record.fields[i].field_value.text_value);
+                    break;                
+                default:
+                    break;
+                }
             }
-            free(buffer);
-            name = tmp->record.fields->field_value.text_value;
-
-
-            // Mise a jour de la valeur en fonction de la taille
-            if (size > strlen(name)) {
-                char *buffer = (char *)malloc(sizeof(char)* size);
-                buffer = "";
-                do {
-                    strcat(buffer, " ");
-                    size--;
-
-                } while (size-strlen(name) != 0);
-                strcat(buffer, get_field_name(tmp->record, name));
-                name = buffer; 
-                free (buffer);
-            }
-        
-        } while (record_list != NULL);
-
-
-        record_list->head = tmp->next;
-        free(tmp);
-        tmp = record_list->head;
-    } while (record_list != NULL);
-
-
-    // Dernier affichage du result header
-    do {
-        tmp = record_list->head;
-        int size;
-        char *buffer = (char *) malloc(sizeof(char) * TEXT_LENGTH); 
-
-        // Calcul de la taille maximale
-        size = strlen(get_field_name(tmp->record, buffer));
-        if (strlen(lltoa(tmp->record.fields->field_value.int_value, buffer, 10)) > size) {
-            size = strlen(lltoa(tmp->record.fields->field_value.int_value, buffer, 10)); // lltoa convertit un long long en chaîne de caractère
-        } else if (strlen(tmp->record.fields->field_value.text_value) > size) {
-            size = strlen(tmp->record.fields->field_value.text_value);
-        } else if (strlen(ulltoa(tmp->record.fields->field_value.primary_key_value, buffer, 10)) > size) {
-            size = strlen(ulltoa(tmp->record.fields->field_value.primary_key_value, buffer, 10)); // ulltoa convertit un unsigned long long en chaîne de caractère
-        } else if (strlen(sprintf(buffer, "%lf", tmp->record.fields->field_value.float_value)) > size) {
-            size = strlen(sprintf(buffer, "%lf", tmp->record.fields->field_value.float_value)); // Convertit un double en chaîne de caractère
-        }
-        free(buffer);
-
-        //Affichage : 
-        printf("+");
-
-        for (int i=0; i<size+2; i++) {  
-            printf("-");
-        }
-        record_list->head = tmp->next;
-        free(tmp);
-        tmp = record_list->head;
-    } while (record_list != NULL);
-    free(tmp);
-    printf('+\n'); //+ de fin de passage de ligne*/
+            printf("|\n");
+            suivant = suivant->next;
+        }   
+    }
 }

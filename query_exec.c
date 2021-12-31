@@ -52,26 +52,9 @@ void execute_insert(insert_query_t *query) {
 void execute_select(update_or_select_query_t *query) {
     record_list_t *record_list = malloc(sizeof(record_list_t));
     clear_list(record_list);
-    /*FILE *data;
-    char buffer[MAX_FIELDS_COUNT*TEXT_LENGTH];
-    table_definition_t table_definition;
-    table_definition_t *table_def;
-    table_def = get_table_definition(query->table_name, &table_definition);
-    uint16_t longueur = compute_record_length(table_def);
-
-    data = open_content_file(query->table_name, "rb");
-    if (data != NULL) {
-        while (!feof(data)) {
-            fread(&buffer, longueur, 1, data);
-            table_record_t record;
-            
-            add_record(record_list, query->where_clause.values);
-
-        }
-    }*/
-
     get_filtered_records(query->table_name, &query->set_clause, &query->where_clause, record_list);
-    //display_table_record_list(&record_list);
+    display_table_record_list(record_list);
+    clear_list(record_list);
     free(record_list);
 }
 
