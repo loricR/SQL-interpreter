@@ -469,6 +469,117 @@ bool is_matching_filter(table_record_t *record, filter_t *filter) {
  * @return a pointer to the first element of the resulting linked list. Shall be freed by the calling function
  */
 record_list_t *get_filtered_records(char *table_name, table_record_t *required_fields, filter_t *filter, record_list_t *result) {
+    if (result->head != NULL || required_fields == NULL) { //La liste chainée result doit être vide et required_fields ne peut pas être NULL
+        return NULL;
+    } else {
+        FILE *index = open_index_file(table_name, "rb");
+        if (index == NULL) {
+            return NULL;
+        }
+
+        uint16_t longueur = compute_record_length(table_name);
+        char *buffer = malloc(longueur);
+        index_record_t index_record;
+        table_definition_t table_defintion;
+        table_record_t record_lu;
+        table_record_t record_afficher;
+        bool trouve_OR;
+        bool trouve_AND;
+
+        if (get_table_definition(table_name, &table_defintion) == NULL) {
+            fclose(index);
+            return NULL;
+        }
+
+        while (!feof(index)) {
+            fread(&index_record, sizeof(index_record), 1, index);
+            if (index_record.is_active) {
+                if (get_table_record(table_name, index_record.record_offset, &table_defintion, &record_lu) != NULL) {
+                    trouve_OR = false;
+                    trouve_AND = true;
+                    for (int i=0; i<record_lu.fields_count; i++) {
+                        for (int j=0; j<filter->values.fields_count; j++) { //on cherche les colonnes à comparer
+                            if (strcmp(record_lu.fields[i].column_name, filter->values.fields[j].column_name) == 0) {
+                                switch (record_lu.fields[i].field_type) {
+                                    case TYPE_INTEGER:
+                                        if (record_lu.fields[i].field_value.int_value == filter->values.fields[j].field_value.int_value) {
+                                            trouve_OR |= true;
+                                            trouve_AND &= true;
+                                        } else {
+                                            trouve_OR |= false;
+                                            trouve_AND &= false;
+                                        }
+                                        break;
+                                    case TYPE_FLOAT:
+                                        if (record_lu.fields[i].field_value.float_value == filter->values.fields[j].field_value.float_value) {
+                                            trouve_OR |= true;
+                                            trouve_AND &= true;
+                                        } else {
+                                            trouve_OR |= false;
+                                            trouve_AND &= false;
+                                        }
+                                        break;
+                                    case TYPE_PRIMARY_KEY:
+                                        if (record_lu.fields[i].field_value.primary_key_value == filter->values.fields[j].field_value.primary_key_value) {
+                                            trouve_OR |= true;
+                                            trouve_AND &= true;
+                                        } else {
+                                            trouve_OR |= false;
+                                            trouve_AND &= false;
+                                        }
+                                        break;
+                                    case TYPE_TEXT:
+                                        if (strcmp(record_lu.fields[i].field_value.text_value, filter->values.fields[j].field_value.text_value) == 0) {
+
+                                            trouve_OR |= true;
+                                            trouve_AND &= true;
+                                        } else {
+                                            trouve_OR |= false;
+                                            trouve_AND &= false;
+                                        }
+                                        break;
+                                    default:
+                                            trouve_OR |= false;
+                                            trouve_AND &= false;
+                                        break;
+                                }
+                            }
+                        }
+                    }
+                    if (((filter->logic_operator == OP_OR) && trouve_OR) || ((filter->logic_operator == OP_AND) && trouve_AND)) {
+                        record_afficher.fields_count = 0;
+                        for (int i=0; i<record_lu.fields_count; i++) { //on enregistre le record pour l'envoye dans un record_list
+                            for (int j=0; j<required_fields->fields_count; j++) {
+                                if (strcmp(record_lu.fields[i].column_name, required_fields->fields[j].column_name) == 0) {
+                                    strcpy(record_afficher.fields[record_afficher.fields_count].column_name, record_lu.fields[i].column_name);
+                                    record_afficher.fields[record_afficher.fields_count].field_type = record_lu.fields[i].field_type;
+                                    switch (record_lu.fields[i].field_type) {
+                                        case TYPE_INTEGER:
+                                            record_afficher.fields[record_afficher.fields_count].field_value.int_value = record_lu.fields[i].field_value.int_value;
+                                            break;
+                                        case TYPE_FLOAT:
+                                            record_afficher.fields[record_afficher.fields_count].field_value.float_value = record_lu.fields[i].field_value.float_value;
+                                            break;
+                                        case TYPE_PRIMARY_KEY:
+                                            record_afficher.fields[record_afficher.fields_count].field_value.primary_key_value = record_lu.fields[i].field_value.primary_key_value;
+                                            break;
+                                        case TYPE_TEXT:
+                                            strcpy(record_afficher.fields[record_afficher.fields_count].field_value.text_value, record_lu.fields[i].field_value.text_value);
+                                            break;
+                                        default:
+                                            break;
+                                    }
+                                    record_afficher.fields_count++;
+                                }
+                            }
+                        }
+                        add_record(result, &record_afficher);
+                    }
+                }
+            }
+        }
+        free(buffer);
+    }
     return result;
 }
 
