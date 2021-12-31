@@ -545,23 +545,23 @@ record_list_t *get_filtered_records(char *table_name, table_record_t *required_f
                     }
                     if (((filter->logic_operator == OP_OR) && trouve_OR) || ((filter->logic_operator == OP_AND) && trouve_AND)) {
                         record_afficher.fields_count = 0;
-                        for (int i=0; i<record_lu.fields_count; i++) { //on enregistre le record pour l'envoye dans un record_list
-                            for (int j=0; j<required_fields->fields_count; j++) {
-                                if (strcmp(record_lu.fields[i].column_name, required_fields->fields[j].column_name) == 0) {
-                                    strcpy(record_afficher.fields[record_afficher.fields_count].column_name, record_lu.fields[i].column_name);
-                                    record_afficher.fields[record_afficher.fields_count].field_type = record_lu.fields[i].field_type;
-                                    switch (record_lu.fields[i].field_type) {
+                        for (int i=0; i<required_fields->fields_count; i++) {
+                            for (int j=0; j<record_lu.fields_count; j++) { //on enregistre le record pour l'envoye dans un record_list
+                                if (strcmp(record_lu.fields[j].column_name, required_fields->fields[i].column_name) == 0) {
+                                    strcpy(record_afficher.fields[record_afficher.fields_count].column_name, record_lu.fields[j].column_name);
+                                    record_afficher.fields[record_afficher.fields_count].field_type = record_lu.fields[j].field_type;
+                                    switch (record_lu.fields[j].field_type) {
                                         case TYPE_INTEGER:
-                                            record_afficher.fields[record_afficher.fields_count].field_value.int_value = record_lu.fields[i].field_value.int_value;
+                                            record_afficher.fields[record_afficher.fields_count].field_value.int_value = record_lu.fields[j].field_value.int_value;
                                             break;
                                         case TYPE_FLOAT:
-                                            record_afficher.fields[record_afficher.fields_count].field_value.float_value = record_lu.fields[i].field_value.float_value;
+                                            record_afficher.fields[record_afficher.fields_count].field_value.float_value = record_lu.fields[j].field_value.float_value;
                                             break;
                                         case TYPE_PRIMARY_KEY:
-                                            record_afficher.fields[record_afficher.fields_count].field_value.primary_key_value = record_lu.fields[i].field_value.primary_key_value;
+                                            record_afficher.fields[record_afficher.fields_count].field_value.primary_key_value = record_lu.fields[j].field_value.primary_key_value;
                                             break;
                                         case TYPE_TEXT:
-                                            strcpy(record_afficher.fields[record_afficher.fields_count].field_value.text_value, record_lu.fields[i].field_value.text_value);
+                                            strcpy(record_afficher.fields[record_afficher.fields_count].field_value.text_value, record_lu.fields[j].field_value.text_value);
                                             break;
                                         default:
                                             break;
