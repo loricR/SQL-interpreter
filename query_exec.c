@@ -46,7 +46,7 @@ void execute_create(create_query_t *query) {
 }
 
 void execute_insert(insert_query_t *query) {
-    add_row_to_table(query->table_name, &query->fields_values);
+    add_row_to_table(query->table_name, &query->fields_names);
 }
 
 void execute_select(update_or_select_query_t *query) {}

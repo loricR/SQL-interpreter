@@ -8,6 +8,7 @@
 #include "table.h"
 #include "check.h"
 #include "query_exec.h"
+#include "expand.h"
 
 #define SQL_COMMAND_MAX_SIZE 1500
 
@@ -167,25 +168,44 @@ int main(int argc, char *argv[]) {
             query_result_t *query_result;
             query_result = parse(buffer, &query);
             if (query_result != NULL) {
-                printf("On a parse\n");
+                printf("Parse OK\n");
                 if (!check_query(&query)) {
                     printf("La requete n'est pas conforme\n");
                 } else {
+                    expand(&query);
                     execute(&query);
                 }
-
-                printf("On parse ok\n");
-            }
-            else {
-                printf("Probleme construction de la requete : %s\n", buffer);
+            } else {
+                printf("Probleme construction de la requete : %s (vérifier les champs, le ; à la fin...)\n", buffer);
             }
 
 
+            printf("Type  : %d = ", query.query_type);
             // TEST CREATE
-            printf("Type  : %d\n", query.query_type);
-            printf("Table : %s\n", query.query_content.create_query.table_name);
-            for (int i=0; i<query.query_content.create_query.table_definition.fields_count; i++) {
-                printf("Champ : %s\n", query.query_content.create_query.table_definition.definitions[i].column_name);
+            if (query.query_type == 1) {
+                printf("CREATE\n");
+                printf("Table : %s\n", query.query_content.create_query.table_name);
+                for (int i=0; i<query.query_content.create_query.table_definition.fields_count; i++) {
+                    printf("Champ : %s\n", query.query_content.create_query.table_definition.definitions[i].column_name);
+                }
+            // TEST INSERT
+            } else if (query.query_type == 6) {
+                printf("INSERT\n");
+                printf("Table : %s\n", query.query_content.insert_query.table_name);
+                for (int i=0; i<query.query_content.insert_query.fields_names.fields_count; i++) {
+                    printf("Type: %d - champ : %s - valeur : ",
+                            query.query_content.insert_query.fields_names.fields[i].field_type,
+                            query.query_content.insert_query.fields_names.fields[i].column_name);
+                    if (query.query_content.insert_query.fields_names.fields[i].field_type == TYPE_INTEGER) {
+                        printf("%lld\n", query.query_content.insert_query.fields_names.fields[i].field_value.int_value);
+                    } else if (query.query_content.insert_query.fields_names.fields[i].field_type == TYPE_PRIMARY_KEY) {
+                        printf("%lld\n", query.query_content.insert_query.fields_names.fields[i].field_value.primary_key_value);
+                    } else if (query.query_content.insert_query.fields_names.fields[i].field_type == TYPE_FLOAT) {
+                        printf("%f\n", query.query_content.insert_query.fields_names.fields[i].field_value.float_value);
+                    } else if (query.query_content.insert_query.fields_names.fields[i].field_type == TYPE_TEXT) {
+                        printf("%s\n", query.query_content.insert_query.fields_names.fields[i].field_value.text_value);
+                    }
+                }
             }
             //for (int i=0; query.query_type )
 
