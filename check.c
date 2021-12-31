@@ -130,8 +130,11 @@ bool check_query_insert(insert_query_t *query) {
     
     if (retour_definition != NULL) { //Si la table existe
         if (check_fields_list(&query->fields_names, &table_definition)) { //Si les champs avant VALUES existes tous
-            if (check_value_types(&query->fields_values, &table_definition)) { //Si les types des valeurs après VALUES sont bons
-                if (query->fields_names.fields_count == query->fields_values.fields_count) { //Si le nombre de champs est égal au nombre de valeurs
+            if (query->fields_names.fields_count == query->fields_values.fields_count) { //Si le nombre de champs est égal au nombre de valeurs
+                for (int i=0; i<query->fields_names.fields_count; i++){ //On copie les valeurs dans la meme structure que la liste des noms de champs
+                    strcpy(query->fields_names.fields[i].field_value.text_value, query->fields_values.fields[i].field_value.text_value);
+                }
+                if (check_value_types(&query->fields_names, &table_definition)) { //Si les types des valeurs après VALUES sont bons
                     return true;
                 }
             }
@@ -219,12 +222,13 @@ bool check_fields_list(table_record_t *fields_list, table_definition_t *table_de
 bool check_value_types(table_record_t *fields_list, table_definition_t *table_definition) {
     bool response = true;
     field_definition_t *field_definition;
+
     for (int i=0; i<fields_list->fields_count; i++) { //Pour chaque champ de la liste
         field_definition = find_field_definition(&fields_list->fields[i].column_name, table_definition);
+        //printf("check_value_types-Type: %d - %s\n", field_definition->column_type, field_definition->column_name);
         if (field_definition == NULL) {
             response = false;
-        }
-        else if (!is_value_valid(&fields_list->fields[i], field_definition)) {
+        } else if (!is_value_valid(&fields_list->fields[i], field_definition)) {
             response = false;
         }
     }
@@ -238,12 +242,12 @@ bool check_value_types(table_record_t *fields_list, table_definition_t *table_de
  * @return a pointer to the field definition structure if the field name exists, NULL if it doesn't.
  */
 field_definition_t *find_field_definition(char *field_name, table_definition_t *table_definition) {
-    field_definition_t *response = NULL;
     bool exist_temp = true;
     for (int i=0; i<table_definition->fields_count; i++) { //On parcours chaque champs de table_definition
-        if (strlen(field_name) == strlen(table_definition->definitions[i].column_name)) { //Si le champs fait la meme longueeur que field_name
-            for (int j=0; j<strlen(field_name); j++) { //On parcours chaque lettre 
-                if (field_name[j]!=table_definition->definitions[i].column_name[j]) { //Si une lettre est diffférente
+        exist_temp = true;
+        if (strlen(field_name) == strlen(table_definition->definitions[i].column_name)) { //Si le champs fait la meme longueur que field_name
+            for (int j=0; (j<strlen(field_name) && (j<strlen(table_definition->definitions[i].column_name))); j++) { //On parcours chaque lettre 
+                if (field_name[j] != table_definition->definitions[i].column_name[j]) { //Si une lettre est diffférente
                     exist_temp=false; //Les mots sont différents
                 }
             }
@@ -253,10 +257,10 @@ field_definition_t *find_field_definition(char *field_name, table_definition_t *
         }
     
         if (exist_temp) { //Si les champs correspondent
-            response = &table_definition->definitions[i]; // On parametre la réponse de la fonction
+            return &table_definition->definitions[i]; // On retourne la valeur de field_definition
         }
     }
-    return response;
+    return NULL;
 }
 
 /*!
@@ -325,7 +329,7 @@ bool is_int(char *value) {
 
     result = strtoll(value, &eptr, 10);    // Convert to a decimal long long
 
-    if (value[*eptr] == '\0') {             // The entire string has been converted
+    if (*eptr == '\0') {             // The entire string has been converted
         return true;
     } 
 
@@ -343,7 +347,7 @@ bool is_float(char *value) {
     double result;
 
     result = strtod(value, &eptr);     // Convert to a double
-    if (value[*eptr] == '\0') {         // The entire string has been converted
+    if (*eptr == '\0') {         // The entire string has been converted
         return true;
     } 
 
@@ -362,7 +366,7 @@ bool is_key(char *value) {
 
     result = strtoull(value, &eptr, 10);   // Convert to a decimal unsigned long         
 
-    if (value[*eptr] == '\0') {             // The entire string has been converted
+    if (*eptr == '\0') {             // The entire string has been converted
         return true;
     } 
 

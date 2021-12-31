@@ -173,9 +173,10 @@ table_definition_t *get_table_definition(char *table_name, table_definition_t *r
             int type;
             char column_name[TEXT_LENGTH];
             result->fields_count = 0;
-            while (fscanf(fptr, "%d %s", &type, column_name) == 2) {
+            while (fscanf(fptr, "%d %[^\n]", &type, column_name) == 2) {
                 result->definitions[result->fields_count].column_type = type;
                 strcpy(result->definitions[result->fields_count].column_name, column_name);
+                printf("Type lu: %d, champ lu: %s\n", result->definitions[result->fields_count].column_type, result->definitions[result->fields_count].column_name);
                 result->fields_count += 1;
             }
             fclose(fptr);
@@ -263,16 +264,25 @@ uint32_t find_first_free_record(char *table_name) {
  */
 void add_row_to_table(char *table_name, table_record_t *record) {
     FILE *index = open_index_file(table_name, "rb+"); //ouverture en lecture/écriture sans écraser le contenu
+    if (index == NULL) {
+        printf("Problème d'accès aux fichiers index de la table %s\n", table_name);
+        return;
+    }
     FILE *data = open_content_file(table_name, "rb+");
-    if ((index == NULL) || (data == NULL)) {
-        printf("Problème d'accès aux fichiers de la table %s\n", table_name);
+    if (data == NULL) {
+        printf("Problème d'accès aux fichiers data de la table %s\n", table_name);
+        fclose(index); //on ferme index car on a pu ouvrir le fichier
         return;
     }
     
-    table_definition_t *definition;
-    definition = get_table_definition(table_name, definition); //On récupère la définition de la table
+    table_definition_t definition;
+    if (get_table_definition(table_name, &definition) == NULL) { //On récupère la définition de la table
+        printf("Inserttion impossible dans la table %s, probleme disque\n", table_name);
+        return; //on n'a pas pu lire donc on sort de la fonction
+    }
     index_record_t buffer;
     uint32_t offset_index = find_first_free_record(table_name);
+    uint16_t taille_buffer = compute_record_length(&definition); //On récupère la somme des longueurs des champs
 
     fseek(index, offset_index, SEEK_SET); //On se place où on a trouvé le active à 0
     fread(&buffer, sizeof(buffer), 1, index);
@@ -280,16 +290,16 @@ void add_row_to_table(char *table_name, table_record_t *record) {
     if (buffer.record_offset == 0) { //Si on a pas trouvé de active à 0 (donc début ou fin de fichier index)
         fseek(data, 0, SEEK_END); 
         buffer.record_offset = ftell(data); //On récupère l'offset à la fin du fichier data
-        buffer.record_length = compute_record_length(definition); //On récupère la somme des longueurs des champs
+        buffer.record_length = taille_buffer; //On récupère la somme des longueurs des champs
         fseek(index, offset_index, SEEK_SET); //On se place où on a trouvé le active à 0
         fwrite(&buffer, sizeof(buffer), 1, index);
     }
     
     char donnees[MAX_FIELDS_COUNT*TEXT_LENGTH]; //Pour réserver la mémoire sans faire de malloc
     char *donnees_retour;
-    donnees_retour = format_row(table_name, donnees, definition, record);
+    donnees_retour = format_row(table_name, donnees, &definition, record);
     fseek(data, buffer.record_offset, SEEK_SET); //On se positionne à l'offset défini dans index
-    fwrite(donnees_retour, sizeof(donnees_retour), 1, data);
+    fwrite(donnees_retour, taille_buffer, 1, data);
 
     for (int i=0; i<record->fields_count; i++) {
         if (record->fields[i].field_type == TYPE_PRIMARY_KEY) {
@@ -299,7 +309,6 @@ void add_row_to_table(char *table_name, table_record_t *record) {
 
     fclose(data);
     fclose(index);
-    
 }
 
 /*!
@@ -311,7 +320,7 @@ void add_row_to_table(char *table_name, table_record_t *record) {
  * @return a pointer to buffer in case of success, NULL else.
  */
 char *format_row(char *table_name, char *buffer, table_definition_t *table_definition, table_record_t *record) {
-    int longueur = 0;
+    size_t longueur = 0;
 
     for (int i=0; i<table_definition->fields_count; i++) {
         for (int j=0; j<record->fields_count; j++) {
@@ -346,7 +355,7 @@ char *format_row(char *table_name, char *buffer, table_definition_t *table_defin
 
 /*!
  * @brief function update_key updates the key value in the key file. Key value is updated if and only if the new value
- * if higher than the stored value. The value sent to the function is the last value inserted into the table, so the
+ * is higher than the stored value. The value sent to the function is the last value inserted into the table, so the
  * function must increment it before comparing to the key file content.
  * @param table_name the name of the table whose key file must be updated
  * @param value the new key value
@@ -356,12 +365,9 @@ void update_key(char *table_name, unsigned long long value) {
         FILE *fptr = open_key_file(table_name, "rb+");
         if (fptr != NULL) {
             unsigned long long actual_key;
-            //fscanf(fptr, "%llu", &actual_key);
             fread(&actual_key, sizeof(unsigned long long), 1, fptr);
-            if (value+1 > actual_key) {
-                value += 1;
+            if (value > actual_key) {
                 rewind(fptr);
-                //fprintf(fptr, "%llu", value+1);
                 fwrite(&value, sizeof(unsigned long long), 1, fptr);
             }
             fclose(fptr);
