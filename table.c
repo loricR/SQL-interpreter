@@ -120,7 +120,6 @@ int table_exists(char *table_name) {
  * @param table_definition a pointer to the definition of the new table
  */
 void create_table(create_query_t *table_definition) {
-    printf("Chemin: %s\n", table_definition->table_name);
     if (!table_exists(table_definition->table_name)) {
         mkdir(table_definition->table_name, S_IRWXU);
         FILE *fptr;
@@ -176,7 +175,6 @@ table_definition_t *get_table_definition(char *table_name, table_definition_t *r
             while (fscanf(fptr, "%d %[^\n]", &type, column_name) == 2) {
                 result->definitions[result->fields_count].column_type = type;
                 strcpy(result->definitions[result->fields_count].column_name, column_name);
-                printf("Type lu: %d, champ lu: %s\n", result->definitions[result->fields_count].column_type, result->definitions[result->fields_count].column_name);
                 result->fields_count += 1;
             }
             fclose(fptr);
