@@ -47,9 +47,7 @@ void expand_insert(insert_query_t *query) {
 }
 
 bool is_field_in_record(table_record_t *record, char *field_name) {
-    printf("Cherche %s\n", field_name);
     for (int i = 0; i<record->fields_count; ++i) {
-        printf("test %s et %s\n", record->fields[i].column_name, field_name);
         if (strcmp(record->fields[i].column_name, field_name) == 0) {
             return true;
         }
