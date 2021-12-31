@@ -168,7 +168,7 @@ int main(int argc, char *argv[]) {
             query_result_t *query_result;
             query_result = parse(buffer, &query);
             if (query_result != NULL) {
-                printf("Parse OK\n");
+                //printf("Parse OK\n");
                 if (!check_query(&query)) {
                     printf("La requete n'est pas conforme\n");
                 } else {
@@ -180,7 +180,7 @@ int main(int argc, char *argv[]) {
             }
 
 
-            printf("Type  : %d = ", query.query_type);
+            printf("\n Requete type  : %d = ", query.query_type);
             // TEST CREATE
             if (query.query_type == 1) {
                 printf("CREATE\n");
