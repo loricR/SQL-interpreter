@@ -231,7 +231,7 @@ char *parse_where_clause(char *sql, filter_t *filter) {
     sql = get_sep_space(sql);
     char *sql_next = sql;
     filter->values.fields_count = 0;
-    operator_t operator = OP_ERROR;
+    operator_t operator = OP_AND; //pour simplifier le calcul dans get_field_table_record
     do {
         sql = parse_equality(sql, &filter->values.fields[filter->values.fields_count]);
 

@@ -59,7 +59,7 @@ bool check_query(query_result_t *query) {
  */
 bool check_query_select(update_or_select_query_t *query) {
     table_definition_t table_definition;
-    table_definition_t *retour_definition = get_table_definition(query->table_name, &table_definition); //TODO : voir comment la fonction retourne pour savoir si on utilise retour_definition ou pas
+    table_definition_t *retour_definition = get_table_definition(query->table_name, &table_definition);
 
     if (retour_definition != NULL) { //Si la table existe
         if (((query->set_clause.fields_count == 1) && (strcmp(query->set_clause.fields[0].column_name, "*") == 0)) || 
@@ -92,7 +92,7 @@ bool check_query_select(update_or_select_query_t *query) {
  */
 bool check_query_update(update_or_select_query_t *query) {
     table_definition_t table_definition;
-    table_definition_t *retour_definition = get_table_definition(query->table_name, &table_definition); //TODO : voir comment la fonction retourne pour savoir si on utilise retour_definition ou pas
+    table_definition_t *retour_definition = get_table_definition(query->table_name, &table_definition);
     
     if (retour_definition != NULL) { //Si la table existe
         if (check_fields_list(&query->set_clause, &table_definition)) { //Si les champs du set existent tous
@@ -135,7 +135,7 @@ bool check_query_create(create_query_t *query) {
  */
 bool check_query_insert(insert_query_t *query) {
     table_definition_t table_definition;
-    table_definition_t *retour_definition = get_table_definition(query->table_name, &table_definition); //TODO : voir comment la fonction retourne pour savoir si on utilise retour_definition ou pas
+    table_definition_t *retour_definition = get_table_definition(query->table_name, &table_definition);
     
     if (retour_definition != NULL) { //Si la table existe
         if (check_fields_list(&query->fields_names, &table_definition)) { //Si les champs avant VALUES existes tous
@@ -163,7 +163,7 @@ bool check_query_insert(insert_query_t *query) {
  */
 bool check_query_delete(delete_query_t *query) {
     table_definition_t table_definition;
-    table_definition_t *retour_definition = get_table_definition(query->table_name, &table_definition); //TODO : voir comment la fonction retourne pour savoir si on utilise retour_definition ou pas
+    table_definition_t *retour_definition = get_table_definition(query->table_name, &table_definition);
     
     if (retour_definition != NULL) { //Si la table existe
         if (check_fields_list(&query->where_clause.values, &table_definition)) { //Si les champs de where existent tous
