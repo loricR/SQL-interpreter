@@ -50,8 +50,8 @@ void execute_insert(insert_query_t *query) {
 }
 
 void execute_select(update_or_select_query_t *query) {
-    record_list_t record_list;
-    clear_list(&record_list);
+    record_list_t *record_list = malloc(sizeof(record_list_t));
+    clear_list(record_list);
     /*FILE *data;
     char buffer[MAX_FIELDS_COUNT*TEXT_LENGTH];
     table_definition_t table_definition;
@@ -70,8 +70,9 @@ void execute_select(update_or_select_query_t *query) {
         }
     }*/
 
-    get_filtered_records(query->table_name, &query->set_clause, &query->where_clause, &record_list);
-    display_table_record_list(&record_list);
+    //get_filtered_records(query->table_name, &query->set_clause, &query->where_clause, &record_list);
+    //display_table_record_list(record_list);
+    free(record_list);
 }
 
 void execute_update(update_or_select_query_t *query) {
