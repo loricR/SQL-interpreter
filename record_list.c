@@ -37,6 +37,14 @@ void add_record(record_list_t *record_list, table_record_t *record) {
     }
 }
 
+
+size_t strlen_utf8(char *s)
+{
+    size_t len = 0;
+    for (; *s; ++s) if ((*s & 0xC0) != 0x80) ++len;
+    return len;
+}
+
 /*!
  * @brief function field_record_length returns a field display length, i.e. the characters count it requires to be
  * displayed (equal to number of digits, signs, and '.' for numbers, number of characters (excluding the trailing '\0')
@@ -50,9 +58,20 @@ int field_record_length(field_record_t *field_record) {
         length = 0;
     }
     else if (field_record->field_type == TYPE_TEXT) { //Si type texte
-        length = strlen(field_record->field_value.text_value);
+        //length = strlen(field_record->field_value.text_value);
+        length = strlen_utf8(field_record->field_value.text_value);
+    } else {
+        char buff[50];
+        if (field_record->field_type == TYPE_INTEGER) {
+            length = sprintf(buff, "%lld", field_record->field_value.int_value);
+        } else if (field_record->field_type == TYPE_PRIMARY_KEY){
+            length = sprintf(buff, "%lld", field_record->field_value.primary_key_value);
+        } else if (field_record->field_type == TYPE_FLOAT) {
+            length = sprintf(buff, "%g", field_record->field_value.float_value);
+        }
     }
-    else if (field_record->field_type == TYPE_INTEGER || field_record->field_type == TYPE_PRIMARY_KEY) { //Si type entier
+
+    /*else if (field_record->field_type == TYPE_INTEGER || field_record->field_type == TYPE_PRIMARY_KEY) { //Si type entier
         float temp;
         if (field_record->field_type == TYPE_INTEGER) {
             temp = field_record->field_value.int_value;
@@ -100,7 +119,9 @@ int field_record_length(field_record_t *field_record) {
             length++;
             temp = temp*10;
         }
-    }
+        
+
+    }*/
     return length;
 }
 
@@ -130,21 +151,85 @@ void display_table_record_list(record_list_t *record_list) {
     if (record_list->head != NULL) { //si le dernier pointeur est nul c'est qu'il n'y a pas de données
         record_list_node_t *suivant = record_list->head;
 
+        int width_col[MAX_FIELDS_COUNT];
+        int nb_max_col = suivant->record.fields_count;
+        int max = 0;
+
+        //on commence par lister la largeur min des en-tete de colonne
+        for (int i=0; i<nb_max_col; i++) {
+            width_col[i] = strlen(suivant->record.fields[i].column_name);
+        }
+
+        //on parcourt la liste des données pour calculer la largeur min de chaque colonne
+        while (suivant != NULL) {
+            for (int i=0; i< nb_max_col; i++) {
+                max = field_record_length(&suivant->record.fields[i]);
+                if (width_col[i] < max) {
+                    width_col[i] = max;
+                }
+            }
+            suivant = suivant->next;
+        }
+        suivant = record_list->head; // on se repositionne au début de la liste pour la suite
+
+        //calcul de la taille des buffers
+        int max_buffer = 0;
+        for (int i=0; i<nb_max_col; i++) {
+            max_buffer += 3; //un trait au début de la colonne + 1 espace avant et après
+            max_buffer += width_col[i];
+        }
+        max_buffer += 2; //le dernier trait a droite et un caractère fin de chaine;
+
+        char *buffer_ligne = malloc(max_buffer * sizeof(char)); //buffer pour afficher les lignes de séparation
+
+        buffer_ligne[0]='+';
+        for (int i=1; i<(max_buffer-1); i++) {
+            buffer_ligne[i]='-';
+        }
+        for (int i=0, pos=0; i<nb_max_col; i++) {
+            pos +=3; //2 espace et le séparateur de colonne
+            pos += width_col[i];
+            buffer_ligne[pos]='+';
+        }
+        buffer_ligne[max_buffer-1]='\0';
+
+        printf("%s\n", buffer_ligne);
+
+        // affichage des entete, on position le nopm du champ au centre de la colonne
+        for (int i=0; i<nb_max_col; i++) {
+            printf("| ");
+            int longueur = width_col[i]-strlen(suivant->record.fields[i].column_name);
+            for (int j=0; j<((longueur / 2) + (longueur % 2)); j++) { // nombre entier, donc si le nombre est impaire il manquerait un caractère, dans ce cas on l'ajoute
+                printf(" ");
+            }
+            printf("%s ", suivant->record.fields[i].column_name); // il y a toujours un espace en plus par rapport à la taille max du texte, pour ne pas etre collé au |
+            for (int j=0; j<(longueur / 2); j++) { //nombre entier, donc si le nombre est impaire il manquerait un caractère
+                printf(" ");
+            }
+        }
+        printf("|\n");
+
+        printf("%s\n", buffer_ligne);
+
         while (suivant != NULL) {
             for (int i=0; i< suivant->record.fields_count; i++) {
+                printf("| ");
+                for (int j=0; j<(width_col[i]-field_record_length(&suivant->record.fields[i])); j++) {
+                    printf(" ");
+                }
                 switch (suivant->record.fields[i].field_type)
                 {
                 case TYPE_INTEGER:
-                    printf("|%lld", suivant->record.fields[i].field_value.int_value);
+                    printf("%lld ", suivant->record.fields[i].field_value.int_value);
                     break;
                 case TYPE_FLOAT:
-                    printf("|%f", suivant->record.fields[i].field_value.float_value);
+                    printf("%g ", suivant->record.fields[i].field_value.float_value);
                     break;
                 case TYPE_PRIMARY_KEY:
-                    printf("|%lld", suivant->record.fields[i].field_value.primary_key_value);
+                    printf("%lld ", suivant->record.fields[i].field_value.primary_key_value);
                     break;
                 case TYPE_TEXT:
-                    printf("|%s", suivant->record.fields[i].field_value.text_value);
+                    printf("%s ", suivant->record.fields[i].field_value.text_value);
                     break;                
                 default:
                     break;
@@ -152,6 +237,10 @@ void display_table_record_list(record_list_t *record_list) {
             }
             printf("|\n");
             suivant = suivant->next;
-        }   
+        }
+
+        printf("%s\n", buffer_ligne);
+
+        free(buffer_ligne);
     }
 }
