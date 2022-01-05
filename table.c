@@ -400,11 +400,7 @@ unsigned long long get_next_key(char *table_name) {
  */
 field_record_t *find_field_in_table_record(char *field_name, table_record_t *record) {
     for (int i=0; i<record->fields_count; i++) { //Pour chaque champs
-        bool exist = true;
-        if (strcmp(field_name, record->fields[i].column_name) != 0) {
-            exist = false;
-        }
-        if (exist) {
+        if (strcmp(field_name, record->fields[i].column_name) == 0) {
             return &record->fields[i];
         }
     }
@@ -421,29 +417,70 @@ field_record_t *find_field_in_table_record(char *field_name, table_record_t *rec
  * @return true if the record matches the filter, false else
  */
 bool is_matching_filter(table_record_t *record, filter_t *filter) {
-    if (filter == NULL || filter->logic_operator == OP_ERROR) {
-        //Si NULL ou ERROR on retourne faux
+    if (filter == NULL) {
+        //Si NULL on retourne faux
+        return false;
+    } else if (filter->values.fields_count == 0) {
+        //la clause where est vide, donc quelque soit les records ils correspondent
+        return true;
+    } else if (filter->logic_operator == OP_ERROR) {
+        //Il y a au moins 1 clauses where mais l'opérateur est invalide
         return false;
     } else { //Sinon on test les conditions du filtre
         bool or = false; //Variable qui vérifie la condition or
         bool and = true; //Variable qui vérifie la condition and
 
-        for (int i=0; i<record->fields_count; i++) { //Pour chaque champs de record
-            for (int j=0; j<filter->values.fields_count; j++) { //Pour chaque champs filter
-                bool temp = true;
-                for (int x=0; x<strlen(record->fields[i].column_name); x++) { //Pour chaque lettre
-                    if (record->fields[i].column_name[x] != filter->values.fields[j].column_name[x]) {
-                        //Si les lettres sont diff -> and est faux et temp est faux (car champs différents)
-                        and = false;
-                        temp = false;
+        field_record_t *field_record;
+
+        for (int i=0; i<filter->values.fields_count; i++) { //Pour chaque champs filter
+            field_record = find_field_in_table_record(filter->values.fields[i].column_name, record);
+            if (field_record != NULL) {
+                    switch (field_record->field_type) {
+                        //Si la valeur correspond au filtre alors on doit calcule or et and avec les valeurs: 
+                        //   1 : or=or | true
+                        //   2 : and=and & true
+                        //Si la valeur ne correspond pas au filtre alors on doit calcule or et and avec les valeurs:
+                        //   3 : or=or | false
+                        //   4 : and=and & false
+                        // On voit que les cas 2 et 3 ne sont pas utile
+                        case TYPE_INTEGER:
+                            if (field_record->field_value.int_value == filter->values.fields[i].field_value.int_value) {
+                                or |= true;
+                            } else {
+                                and &= false;
+                            }
+                            break;
+                        case TYPE_FLOAT:
+                            if (field_record->field_value.float_value == filter->values.fields[i].field_value.float_value) {
+                                or |= true;
+                            } else {
+                                and &= false;
+                            }
+                            break;
+                        case TYPE_PRIMARY_KEY:
+                            if (field_record->field_value.primary_key_value == filter->values.fields[i].field_value.primary_key_value) {
+                                or |= true;
+                            } else {
+                                and &= false;
+                            }
+                            break;
+                        case TYPE_TEXT:
+                            if (strcmp(field_record->field_value.text_value, filter->values.fields[i].field_value.text_value) == 0) {
+                                or |= true;
+                            } else {
+                                and &= false;
+                            }
+                            break;
+                        default:
+                                or |= false;
+                                and &= false;
+                            break;
                     }
-                }
-                if (temp) { //Si temp = true -> les champs sont égaux donc or = true
-                    or = true;
-                }
+            } else { //On ne devrait normalement pas arrivé dans ce cas, car filter a été testé et doit être valide
+                return false;
             }
         }
-
+         
         if (filter->logic_operator == OP_OR) {
             return or;
         }
@@ -492,58 +529,7 @@ record_list_t *get_filtered_records(char *table_name, table_record_t *required_f
         while(fread(&index_record, sizeof(index_record), 1, index)) {    
             if (index_record.is_active) {
                 if (get_table_record(table_name, index_record.record_offset, &table_defintion, &record_lu) != NULL) {
-                    trouve_OR = false;
-                    trouve_AND = true;
-                    for (int i=0; i<record_lu.fields_count; i++) {
-                        for (int j=0; j<filter->values.fields_count; j++) { //on cherche les colonnes à comparer
-                            if (strcmp(record_lu.fields[i].column_name, filter->values.fields[j].column_name) == 0) {
-                                switch (record_lu.fields[i].field_type) {
-                                    case TYPE_INTEGER:
-                                        if (record_lu.fields[i].field_value.int_value == filter->values.fields[j].field_value.int_value) {
-                                            trouve_OR |= true;
-                                            trouve_AND &= true;
-                                        } else {
-                                            trouve_OR |= false;
-                                            trouve_AND &= false;
-                                        }
-                                        break;
-                                    case TYPE_FLOAT:
-                                        if (record_lu.fields[i].field_value.float_value == filter->values.fields[j].field_value.float_value) {
-                                            trouve_OR |= true;
-                                            trouve_AND &= true;
-                                        } else {
-                                            trouve_OR |= false;
-                                            trouve_AND &= false;
-                                        }
-                                        break;
-                                    case TYPE_PRIMARY_KEY:
-                                        if (record_lu.fields[i].field_value.primary_key_value == filter->values.fields[j].field_value.primary_key_value) {
-                                            trouve_OR |= true;
-                                            trouve_AND &= true;
-                                        } else {
-                                            trouve_OR |= false;
-                                            trouve_AND &= false;
-                                        }
-                                        break;
-                                    case TYPE_TEXT:
-                                        if (strcmp(record_lu.fields[i].field_value.text_value, filter->values.fields[j].field_value.text_value) == 0) {
-
-                                            trouve_OR |= true;
-                                            trouve_AND &= true;
-                                        } else {
-                                            trouve_OR |= false;
-                                            trouve_AND &= false;
-                                        }
-                                        break;
-                                    default:
-                                            trouve_OR |= false;
-                                            trouve_AND &= false;
-                                        break;
-                                }
-                            }
-                        }
-                    }
-                    if ((filter == NULL) || (filter->values.fields_count == 0) || ((filter->logic_operator == OP_OR) && trouve_OR) || ((filter->logic_operator == OP_AND) && trouve_AND)) {
+                    if (is_matching_filter(&record_lu, filter)) {
                         record_afficher.fields_count = 0;
                         for (int i=0; i<required_fields->fields_count; i++) {
                             for (int j=0; j<record_lu.fields_count; j++) { //on enregistre le record pour l'envoye dans un record_list
