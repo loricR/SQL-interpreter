@@ -310,6 +310,8 @@ query_result_t *parse_select(char *sql, query_result_t *result) {
         sql = temp;
         sql = get_sep_space(sql);
         sql = parse_where_clause(sql, &result->query_content.select_query.where_clause); //On récupère la clause WHERE
+    } else {
+        result->query_content.select_query.where_clause.values.fields_count = 0; //Il n'y a pas de clause where
     }
     if ((!has_reached_sql_end(sql)) || (sql == NULL)) {
         return NULL;
@@ -373,6 +375,8 @@ query_result_t *parse_update(char *sql, query_result_t *result) {
         sql = temp;
         sql = get_sep_space(sql);
         sql = parse_where_clause(sql, &result->query_content.update_query.where_clause); //On récupère la clause WHERE
+    } else {
+        result->query_content.select_query.where_clause.values.fields_count = 0; //Il n'y a pas de clause where
     }
     
     if ((!has_reached_sql_end(sql)) || (sql == NULL)) {
@@ -396,6 +400,8 @@ query_result_t *parse_delete(char *sql, query_result_t *result) {
         sql = temp;
         sql = get_sep_space(sql);
         sql = parse_where_clause(sql, &result->query_content.delete_query.where_clause); //On récupère la clause WHERE
+    } else {
+        result->query_content.select_query.where_clause.values.fields_count = 0; //Il n'y a pas de clause where
     }
     
     if ((!has_reached_sql_end(sql)) || (sql == NULL)) {
