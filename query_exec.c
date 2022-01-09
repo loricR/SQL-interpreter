@@ -121,10 +121,7 @@ void execute_update(update_or_select_query_t *query) {
 }
 
 void execute_delete(delete_query_t *query) {
-    //met active à 0 sur les lignes où il y a la condition du where
-    //lire le index et le data en même temps et si une ligne correspond au where on met active à 0
-    record_list_t test;
- //   add_record();
+    delete_row_to_table(query->table_name, &query->where_clause);
 }
 
 void execute_drop_table(char *table_name) {

@@ -512,8 +512,6 @@ record_list_t *get_filtered_records(char *table_name, table_record_t *required_f
             return NULL;
         }
 
-        uint16_t longueur = compute_record_length(table_name);
-        char *buffer = malloc(longueur*sizeof(char));
         index_record_t index_record;
         table_definition_t table_defintion;
         table_record_t record_lu;
@@ -561,7 +559,6 @@ record_list_t *get_filtered_records(char *table_name, table_record_t *required_f
                 }
             }
         }
-        free(buffer);
     }
     return result;
 }
@@ -607,4 +604,42 @@ table_record_t *get_table_record(char *table_name, uint32_t offset, table_defini
         return result;
     }
     return NULL;
+}
+
+/*!
+ * @brief function delete_row_to_table
+ * @param table_name the name of the target table
+ * @param filter the WHERE clause filter. NULL if no filter must be applied
+ */
+void delete_row_to_table(char *table_name, filter_t *filter) {
+        //met active à 0 sur les lignes où il y a la condition du where
+    //lire le index et le data en même temps et si une ligne correspond au where on met active à 0
+    FILE *index = open_index_file(table_name, "rb+");
+    if (index == NULL) {
+        return;
+    }
+
+    index_record_t index_record;
+    size_t longueur = sizeof(index_record);
+    table_definition_t table_defintion;
+    table_record_t record_lu;
+
+    if (get_table_definition(table_name, &table_defintion) == NULL) {
+        fclose(index);
+        return;
+    }
+
+    printf("On a trouve la table\n");
+    fseek(index, 0, SEEK_SET);
+    while(fread(&index_record, longueur, 1, index)) {    
+        if (index_record.is_active) {
+            if (get_table_record(table_name, index_record.record_offset, &table_defintion, &record_lu) != NULL) {
+                if (is_matching_filter(&record_lu, filter)) {
+                    index_record.is_active = 0; //On ne modifie que active
+                    fseek(index, -longueur, SEEK_CUR); //On se repositionne au début du dernier index que l'on vient de lire
+                    fwrite(&index_record, longueur, 1, index); //On réécrit tout mais offset et lenght n'ont pas changé
+                }
+            }
+        }
+    }
 }
