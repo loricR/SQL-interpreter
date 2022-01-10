@@ -194,9 +194,19 @@ bool check_query_drop_table(char *table_name) {
  * @return true if valid, false if invalid
  */
 bool check_query_drop_db(char *db_name) {
-    if (directory_exists(db_name)) {
+    char buffer[300];
+    char *chemin;
+    char *parent;
+    chemin = getcwd(buffer, sizeof(buffer)); //On récupère le répertoire courant
+    parent = strstr(chemin+strlen(chemin)-4, "/db"); //On test si le dernier répertoire est "db"
+    if ((parent == NULL) || (strcmp(parent, "/db") != 0)) { //Si on est pas dans "db"
+        if (directory_exists(db_name)) {
+            return true;
+        }
+    } else {
         return true;
     }
+    
     return false;
 }
 

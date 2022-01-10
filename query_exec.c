@@ -39,8 +39,17 @@ void execute(query_result_t *query) {
 }
 
 void execute_create(create_query_t *query) {
-    if (!directory_exists("db")) {
-        create_db_directory("db");
+    char buffer[300];
+    char *chemin;
+    char *parent;
+    chemin = getcwd(buffer, sizeof(buffer)); //On récupère le répertoire courant
+    parent = strstr(chemin+strlen(chemin)-4, "/db"); //On test si le dernier répertoire est "db"
+    if ((parent == NULL) || (strcmp(parent, "/db") != 0)) { //Si on est pas dans "db"
+    
+        if (!directory_exists("db")) {
+            create_db_directory("db");
+        }
+        chdir("db");
     }
     create_table(query);
 }
@@ -71,5 +80,13 @@ void execute_drop_table(char *table_name) {
 }
 
 void execute_drop_database(char *db_name) {
+    char buffer[TEXT_LENGTH];
+    char *chemin;
+    char *parent;
+    chemin = getcwd(buffer, TEXT_LENGTH); //On récupère le répertoire courant
+    parent = strstr(chemin+strlen(chemin)-4, "/db"); //On test si le dernier répertoire est "db"
+    if ((parent != NULL) && (strcmp(parent, "/db") == 0)) {
+        chdir(".."); //Si on est dans le répertoire "db" on revient en arrière
+    }
     recursive_rmdir(db_name);
 }

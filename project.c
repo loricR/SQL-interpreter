@@ -30,6 +30,10 @@ int main(int argc, char *argv[]) {
     	}
     }
 
+    if (directory_exists("db")) {
+        chdir("db"); //On se déplace dans le répertoire "db"
+    }
+
     char buffer[SQL_COMMAND_MAX_SIZE];
     do {
         printf("> ");
