@@ -308,7 +308,7 @@ bool is_value_valid(field_record_t *value, field_definition_t *field_definition)
             case TYPE_PRIMARY_KEY:
                 if (is_key(value->field_value.text_value)) {
                     value->field_type = TYPE_PRIMARY_KEY;
-                    value->field_value.primary_key_value = strtoull(value->field_value.text_value, &eptr, 10); //Pas d'erreur car déjà testé dans is_float
+                    value->field_value.primary_key_value = strtoull(value->field_value.text_value, &eptr, 10); //Pas d'erreur car déjà testé dans is_key
                     response = true;
                 }
                 break;

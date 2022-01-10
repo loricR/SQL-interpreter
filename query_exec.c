@@ -59,65 +59,7 @@ void execute_select(update_or_select_query_t *query) {
 }
 
 void execute_update(update_or_select_query_t *query) {
-    //mettre à jour les lignes qui correspondes au where
-    char buffer_data[MAX_FIELDS_COUNT*TEXT_LENGTH];
-    index_record_t buffer_index;
-    record_list_t record_list;
-    table_definition_t definition;
-    table_record_t record_data;
-    int longueur_lu = 0;
-
-    FILE *data = open_content_file(query->table_name, "rb+");
-    if (data == NULL) {
-        printf("Erreur d'accès au fichier data\n");
-        return;
-    }
-    FILE *index = open_index_file(query->table_name, "rb");
-    if (index == NULL) {
-        printf("Erreur d'accès au fichier index\n");
-        fclose(data);
-        return;
-    }
-    get_table_definition(query->table_name, &definition);
-    record_data.fields_count = definition.fields_count;
-    while (!feof(index)) {
-        fread(&buffer_index, sizeof(buffer_index), 1, index);
-        if (buffer_index.is_active == 1) {
-            fread(buffer_data, sizeof(buffer_data), 1, data);
-            longueur_lu = 0;
-
-            for (int i=0; i<definition.fields_count; i++) {
-                switch(definition.definitions[i].column_type) {
-                    case TYPE_INTEGER:
-                        record_data.fields[i].field_value.int_value = *(buffer_data+longueur_lu);
-                        longueur_lu += sizeof(long long);
-                        break;
-                    case TYPE_FLOAT:
-                        record_data.fields[i].field_value.float_value = *(buffer_data+longueur_lu);
-                        longueur_lu += sizeof(double);
-                        break;
-                    case TYPE_PRIMARY_KEY:
-                        record_data.fields[i].field_value.primary_key_value = *(buffer_data+longueur_lu);
-                        longueur_lu += sizeof(unsigned long long);
-                        break;
-                    case TYPE_TEXT:
-                        strcpy(record_data.fields[i].field_value.text_value, buffer_data+longueur_lu);
-                        longueur_lu += TEXT_LENGTH;
-                        break;
-                    default:
-                        break;
-                }
-            }
-
-            /*for (int j=0; j<query->where_clause.values.fields_count; j++) {
-                if (record_data.fields[j].field_value == query->where_clause.values.fields[j].field_value) {
-
-                }
-            }*/
-        }
-    }
-    get_filtered_records(query->table_name, &query->where_clause.values, &query->where_clause, &record_list);
-    
+    set_row_to_table(query->table_name, &query->set_clause, &query->where_clause);    
 }
 
 void execute_delete(delete_query_t *query) {

@@ -513,20 +513,18 @@ record_list_t *get_filtered_records(char *table_name, table_record_t *required_f
         }
 
         index_record_t index_record;
-        table_definition_t table_defintion;
+        table_definition_t table_definition;
         table_record_t record_lu;
         table_record_t record_afficher;
-        bool trouve_OR;
-        bool trouve_AND;
 
-        if (get_table_definition(table_name, &table_defintion) == NULL) {
+        if (get_table_definition(table_name, &table_definition) == NULL) {
             fclose(index);
             return NULL;
         }
         fseek(index, 0, SEEK_SET);
         while(fread(&index_record, sizeof(index_record), 1, index)) {    
             if (index_record.is_active) {
-                if (get_table_record(table_name, index_record.record_offset, &table_defintion, &record_lu) != NULL) {
+                if (get_table_record(table_name, index_record.record_offset, &table_definition, &record_lu) != NULL) {
                     if (is_matching_filter(&record_lu, filter)) {
                         record_afficher.fields_count = 0;
                         for (int i=0; i<required_fields->fields_count; i++) {
@@ -629,7 +627,6 @@ void delete_row_to_table(char *table_name, filter_t *filter) {
         return;
     }
 
-    printf("On a trouve la table\n");
     fseek(index, 0, SEEK_SET);
     while(fread(&index_record, longueur, 1, index)) {    
         if (index_record.is_active) {
@@ -642,4 +639,87 @@ void delete_row_to_table(char *table_name, filter_t *filter) {
             }
         }
     }
+}
+
+/*!
+ * @brief function set_row_to_table 
+ * @param table_name the name of the target table
+ * @param set_fields the list of fields to be update
+ * @param filter the WHERE clause filter. NULL if no filter must be applied
+ */
+void set_row_to_table(char *table_name, table_record_t  *set_fields, filter_t *filter) {
+    if (set_fields == NULL) { //S'il n'y a rien à mettre à jour
+        return;
+    }
+
+    FILE *index = open_index_file(table_name, "rb"); //ouverture en lecture 
+    if (index == NULL) {
+        printf("Problème d'accès aux fichiers index de la table %s\n", table_name);
+        return;
+    }
+
+    FILE *data = open_content_file(table_name, "rb+");
+    if (data == NULL) {
+        printf("Problème d'accès aux fichiers data de la table %s\n", table_name);
+        fclose(index); //on ferme index car on n'a pas pu ouvrir le fichier
+        return;
+    }
+
+    table_definition_t table_definition;
+    index_record_t index_record;
+    table_record_t record_lu;
+    uint16_t taille_buffer;
+    char donnees[MAX_FIELDS_COUNT*TEXT_LENGTH]; //Pour réserver la mémoire sans faire de malloc
+    int nb_maj = 0;
+
+    if (get_table_definition(table_name, &table_definition) == NULL) {
+        printf("Update impossible dans la table %s, probleme disque\n", table_name);
+        fclose(index);
+        fclose(data);
+        return;
+    }
+    
+    taille_buffer = compute_record_length(&table_definition); //On récupère la somme des longueurs des champs
+    
+    fseek(index, 0, SEEK_SET);
+    while(fread(&index_record, sizeof(index_record), 1, index)) {    
+        if (index_record.is_active) {
+            if (get_table_record(table_name, index_record.record_offset, &table_definition, &record_lu) != NULL) {
+                if (is_matching_filter(&record_lu, filter)) { //On met à jour le record avec les valeurs du ou des SET
+                    for (int i=0; i<record_lu.fields_count; i++) { //On parcourt les colonnes et on modifie si elle est dans set_fields
+                        for (int j=0; j<set_fields->fields_count; j++) {
+                            if (strcmp(record_lu.fields[i].column_name, set_fields->fields[j].column_name) == 0) {
+                                switch (record_lu.fields[i].field_type) {
+                                    case TYPE_INTEGER:
+                                        record_lu.fields[i].field_value.int_value = set_fields->fields[j].field_value.int_value;
+                                        break;
+                                    case TYPE_FLOAT:
+                                        record_lu.fields[i].field_value.float_value = set_fields->fields[j].field_value.float_value;
+                                        break;
+                                    case TYPE_PRIMARY_KEY:
+                                        record_lu.fields[i].field_value.primary_key_value = set_fields->fields[j].field_value.primary_key_value;
+                                        update_key(table_name, record_lu.fields[i].field_value.primary_key_value);
+                                        break;
+                                    case TYPE_TEXT:
+                                        strcpy(record_lu.fields[i].field_value.text_value, set_fields->fields[j].field_value.text_value);
+                                        break;
+                                    default:
+                                        break;
+                                }
+                            }
+                        }
+                    }
+
+                    if (format_row(table_name, donnees, &table_definition, &record_lu) != NULL) {
+                        fseek(data, index_record.record_offset, SEEK_SET); //On se positionne à l'offset défini dans index
+                        fwrite(donnees, taille_buffer, 1, data);
+                        nb_maj++;
+                    }
+                }
+            }
+        }
+    }
+    printf("Nb de ligne mise à jour : %d\n", nb_maj);
+    fclose(data);
+    fclose(index);
 }

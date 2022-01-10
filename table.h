@@ -40,5 +40,6 @@ record_list_t *get_filtered_records(char *table_name, table_record_t *required_f
 table_record_t *get_table_record(char *table_name, uint32_t offset, table_definition_t *def, table_record_t *result);
 
 void delete_row_to_table(char *table_name, filter_t *filter);
+void set_row_to_table(char *table_name, table_record_t  *set_fields, filter_t *filter);
 
 #endif //_TABLE_H
