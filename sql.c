@@ -52,6 +52,11 @@ char *get_keyword(char *sql, char *keyword) {
         different = 1;
     }
 
+    //On doit toujours avoir un espace après un mot clé, il est dont plus simple de le testé dans cette fonction plutôt que dans chaque parse
+    if (*sql != ' ') {
+        sql = NULL;
+    }
+
     //Si les deux mots sont differents ou si keyword est plus grand que sql, il y a erreur
     if (different) {
         sql = NULL;
