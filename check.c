@@ -61,7 +61,7 @@ bool check_query_select(update_or_select_query_t *query) {
     table_definition_t table_definition;
     table_definition_t *retour_definition = get_table_definition(query->table_name, &table_definition);
 
-    if (retour_definition != NULL) { //Si la table existe
+    if (table_exists(query->table_name)) { //Si la table existe
         if (((query->set_clause.fields_count == 1) && (strcmp(query->set_clause.fields[0].column_name, "*") == 0)) || 
             check_fields_list(&query->set_clause, &table_definition)) { //Si les champs de la liste de champs existent tous
             if (query->where_clause.values.fields_count == 0) {
@@ -78,6 +78,8 @@ bool check_query_select(update_or_select_query_t *query) {
                 }
             }
         }
+    } else {
+        printf("La table %s n'existe pas\n", query->table_name);
     }
     return false;
 }
@@ -94,16 +96,26 @@ bool check_query_update(update_or_select_query_t *query) {
     table_definition_t table_definition;
     table_definition_t *retour_definition = get_table_definition(query->table_name, &table_definition);
     
-    if (retour_definition != NULL) { //Si la table existe
+    if (table_exists(query->table_name)) { //Si la table existe
         if (check_fields_list(&query->set_clause, &table_definition)) { //Si les champs du set existent tous
             if (check_value_types(&query->set_clause, &table_definition)) { //Si les types des champs du set sont bons
-                if (check_fields_list(&query->where_clause.values, &table_definition)) { //Si les champs du where existent tous
-                    if (check_value_types(&query->where_clause.values, &table_definition)) { //Si les types des champs du where sont bons
-                        return true;
+                if (query->where_clause.values.fields_count == 0) {
+                    return true; //S'il n'y a pas de clause where
+                } else {
+                    if (query->where_clause.logic_operator != OP_ERROR) {
+                        if (check_fields_list(&query->where_clause.values, &table_definition)) { //Si les champs de la liste de champs dans le where existent tous
+                            if (check_value_types(&query->where_clause.values, &table_definition)) { //Si les types dans le where sont correctes
+                                return true;
+                            }
+                        }
+                    } else {
+                        printf("L'opération effectuée dans la clause WHERE n'est pas conforme\n");
                     }
                 }
             }
         }
+    } else {
+        printf("La table %s n'existe pas\n", query->table_name);
     }
 
     return false;
@@ -137,7 +149,7 @@ bool check_query_insert(insert_query_t *query) {
     table_definition_t table_definition;
     table_definition_t *retour_definition = get_table_definition(query->table_name, &table_definition);
     
-    if (retour_definition != NULL) { //Si la table existe
+    if (table_exists(query->table_name)) { //Si la table existe
         if (check_fields_list(&query->fields_names, &table_definition)) { //Si les champs avant VALUES existes tous
             if (query->fields_names.fields_count == query->fields_values.fields_count) { //Si le nombre de champs est égal au nombre de valeurs
                 for (int i=0; i<query->fields_names.fields_count; i++){ //On copie les valeurs dans la meme structure que la liste des noms de champs
@@ -148,6 +160,8 @@ bool check_query_insert(insert_query_t *query) {
                 }
             }
         }
+    } else {
+        printf("La table %s n'existe pas\n", query->table_name);
     }
     
     return false;
@@ -165,12 +179,22 @@ bool check_query_delete(delete_query_t *query) {
     table_definition_t table_definition;
     table_definition_t *retour_definition = get_table_definition(query->table_name, &table_definition);
     
-    if (retour_definition != NULL) { //Si la table existe
-        if (check_fields_list(&query->where_clause.values, &table_definition)) { //Si les champs de where existent tous
-            if (check_value_types(&query->where_clause.values, &table_definition)) { //Si les type des valeurs de where sont bons
-                return true;
+    if (table_exists(query->table_name)) { //Si la table existe
+        if (query->where_clause.values.fields_count == 0) {
+            return true; //S'il n'y a pas de clause where
+        } else {
+            if (query->where_clause.logic_operator != OP_ERROR) {
+                if (check_fields_list(&query->where_clause.values, &table_definition)) { //Si les champs de la liste de champs dans le where existent tous
+                    if (check_value_types(&query->where_clause.values, &table_definition)) { //Si les types dans le where sont correctes
+                        return true;
+                    }
+                }
+            } else {
+                printf("L'opération effectuée dans la clause WHERE n'est pas conforme\n");
             }
         }
+    } else {
+        printf("La table %s n'existe pas\n", query->table_name);
     }
 
     return false;
